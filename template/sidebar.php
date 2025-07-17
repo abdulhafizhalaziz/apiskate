@@ -86,7 +86,7 @@
             </a>
             </li>
               <li class="nav-item">
-              <a href="<?= $main_url ?>laporan-penjualan" class="nav-link">
+              <a href="<?= $main_url ?>laporan-penjualan" class="nav-link <?=laporanJual()?>">
                 <i class="nav-icon fa-solid fa-chart-line"></i>
                 <p>Laporan Penjualan</p>
             </a>

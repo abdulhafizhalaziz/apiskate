@@ -53,8 +53,8 @@ $penjualan = getData("SELECT * FROM tbl_jual_head");
                                 <th>No</th>
                                 <th>No Penjualan</th>
                                 <th>Tgl Penjualan</th>
-                                <th>Pelanggan</th>
-                                <th>Total Penjualan</th>
+                                <th class="text-center">Pelanggan</th>
+                                <th class="text-center">Total Penjualan</th>
                                 <th style="width: 10%;" class="text-center">Opsi</th>
                             </tr>
                         </thead>

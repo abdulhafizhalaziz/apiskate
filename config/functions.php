@@ -174,6 +174,14 @@ function laporanBeli(): string|null {
     }
     return $result;
 }
+function laporanJual(): string|null {
+    if (userMenu() == 'laporan-penjualan') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
 
 function in_date($tgl) {
     $tg = substr($tgl, 8, 2);

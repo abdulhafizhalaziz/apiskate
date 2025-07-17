@@ -53,8 +53,8 @@ $pembelian = getData("SELECT * FROM tbl_beli_head");
                                 <th>No</th>
                                 <th>No Pembelian</th>
                                 <th>Tgl Pembelian</th>
-                                <th>Suplier</th>
-                                <th>Total Pembelian</th>
+                                <th class="text-center">Suplier</th>
+                                <th class="text-center">Total Pembelian</th>
                                 <th style="width: 10%;" class="text-center">Opsi</th>
                             </tr>
                         </thead>
