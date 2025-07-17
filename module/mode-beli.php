@@ -43,8 +43,8 @@ function insert($data){
         return false;
     }
 
-    $sqlbeli = "INSERT INTO tbl_beli_detail VALUES (null, '$no', '$tgl', '$kode', '$nama', $qty, $harga, $jmlharga)";
-    mysqli_query($koneksi, $sqlbeli);
+    $sqlBeli = "INSERT INTO tbl_beli_detail VALUES (null, '$no', '$tgl', '$kode', '$nama', $qty, $harga, $jmlharga)";
+    mysqli_query($koneksi, $sqlBeli);
 
     mysqli_query($koneksi, "UPDATE tbl_barang SET stock = stock + $qty WHERE id_barang = '$kode'");
     return mysqli_affected_rows($koneksi);
@@ -70,11 +70,8 @@ function simpan($data){
     $supplier   = mysqli_real_escape_string($koneksi, $data['supplier']);
     $keterangan = mysqli_real_escape_string($koneksi, $data['ketr']);
 
-    $sqlbeli    = "INSERT INTO tbl_beli_head VALUES ('$noBeli','$tgl','$supplier',$total,'$keterangan')";
-    mysqli_query($koneksi, $sqlbeli);
+    $sqlBeli    = "INSERT INTO tbl_beli_head VALUES ('$noBeli','$tgl','$supplier',$total,'$keterangan')";
+    mysqli_query($koneksi, $sqlBeli);
 
     return mysqli_affected_rows($koneksi);
 }
-
-
-?>
