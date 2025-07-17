@@ -47,6 +47,10 @@ logs/
 uploads/
 asset/image/uploads/
 
+# Third-party libraries and frameworks
+asset/AdminLTE-3.2.0/
+asset/barcodeGenerator/vendor/
+
 # Configuration files with sensitive data
 config/database.php
 config/secrets.php
