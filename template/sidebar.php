@@ -63,13 +63,13 @@
             <?php } ?>
             <li class="nav-header">Transaksi</li>
             <li class="nav-item">
-              <a href="<?= $main_url ?>pembelian" class="nav-link">
+              <a href="<?= $main_url ?>pembelian" class="nav-link <?=menuPembelian()?>">
                 <i class="nav-icon fa-solid fa-cart-shopping"></i>
                 <p>Pembelian</p>
             </a>
             </li>
               <li class="nav-item">
-              <a href="<?= $main_url ?>penjualan" class="nav-link">
+              <a href="<?= $main_url ?>penjualan" class="nav-link <?=menuPenjualan()?>">
                 <i class="nav-icon fa-solid fa-cart-shopping"></i>
                 <p>Penjualan</p>
             </a>
@@ -89,7 +89,7 @@
             </li>
             </li>
               <li class="nav-item">
-              <a href="<?= $main_url ?>Stock" class="nav-link  <?=laporanStock()?>">
+              <a href="<?= $main_url ?>stock" class="nav-link <?=laporanStock()?>">
                 <i class="nav-icon fa-solid fa-warehouse"></i>
                 <p>Laporan Stock</p>
             </a>

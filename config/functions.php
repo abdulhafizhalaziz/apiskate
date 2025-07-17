@@ -140,6 +140,22 @@ function menuBarang() {
     }
     return $result;
 }
+function menuPembelian() {
+    if (userMenu() == 'pembelian') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+function menuPenjualan() {
+    if (userMenu() == 'penjualan') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
 
 function laporanStock() {
     if (userMenu() == 'stock') {
