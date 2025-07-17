@@ -141,5 +141,10 @@ function menuBarang() {
     return $result;
 }
 
-
+function in_date($tgl) {
+    $tg = substr($tgl, 8, 2);
+    $bln = substr($tgl, 5, 2);
+    $thn = substr($tgl, 0, 4);
+    return $tg . '-' . $bln . '-' . $thn;
+}
 ?>

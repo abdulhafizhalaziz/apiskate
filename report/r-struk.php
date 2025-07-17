@@ -27,7 +27,7 @@ $itemJual = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$nota'");
     <table style="border-bottom: solid 2px; text-align: center; font-size: 14px; width: 240px;">
         <tr>
             <td>
-                <b>SnackinAja POS</b>
+                <b>Snackinaja POS</b>
             </td>
         </tr>
         <tr>

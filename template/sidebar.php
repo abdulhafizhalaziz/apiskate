@@ -76,7 +76,7 @@
             </li>
               <li class="nav-header">Report</li>
             <li class="nav-item">
-              <a href="#" class="nav-link">
+              <a href="<?= $main_url ?>laporan-pembelian" class="nav-link">
                 <i class="nav-icon fa-solid fa-cart-shopping"></i>
                 <p>Laporan Pembelian</p>
             </a>
