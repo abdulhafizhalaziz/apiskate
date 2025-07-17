@@ -192,7 +192,7 @@ if (isset($_POST['simpan'])) {
                     <div class="row">
                         <div class="col-lg-6 p-2">
                             <div class="form-group row mb-2">
-                            <label for="supplier" class="col-sm-3 col-form-label col-form-label-sm">Supplier</label>
+                            <label for="supplier" class="col-sm-3 col-form-label col-form-label">Supplier</label>
                             <div class="col-sm-9">
                                 <select name="supplier" id="supplier" class="form-control form-control-sm">
                                     <option value="">-- Pilih Supplier --</option>

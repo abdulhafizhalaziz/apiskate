@@ -14,7 +14,11 @@
           <img src="<?= $main_url ?>asset/image/<?= userLogin()['foto'] ?>" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block"><?= 'Abd Hafizh Al Aziz'?></a>
+          <?php if(userLogin()['level'] == 1) { ?>
+            <a href="<?=$main_url?>user/edit-user.php?id=<?=userLogin()['userid']?>" class="d-block"><?= userLogin()['fullname']?></a>
+          <?php } else { ?>
+            <a href="<?=$main_url?>dashboard.php" class="d-block"><?= userLogin()['fullname']?></a>
+          <?php } ?>
         </div>
       </div>
 

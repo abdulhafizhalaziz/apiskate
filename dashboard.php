@@ -15,6 +15,18 @@ require "template/header.php";
 require "template/navbar.php";
 require "template/sidebar.php";
 
+$users = getData("SELECT COUNT(*) as total FROM tbl_user");
+$user_count = $users[0]['total'];
+
+$suppliers = getData("SELECT COUNT(*) as total FROM tbl_supplier");
+$supplier_count = $suppliers[0]['total'];
+
+$customers = getData("SELECT COUNT(*) as total FROM tbl_customer");
+$customer_count = $customers[0]['total'];
+
+$barang = getData("SELECT COUNT(*) as total FROM tbl_barang");
+$barang_count = $barang[0]['total'];
+
 ?>
 
 <!-- Content Wrapper. Contains page content -->
@@ -24,12 +36,12 @@ require "template/sidebar.php";
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">dashboard</h1>
+            <h1 class="m-0">Dashboard</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
-              <li class="breadcrumb-item active">dashboard</li>
+              <li class="breadcrumb-item active">Dashboard</li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -46,14 +58,14 @@ require "template/sidebar.php";
             <!-- small box -->
             <div class="small-box bg-info">
               <div class="inner">
-                <h3>0</h3>
+                <h3><?= $user_count ?></h3>
 
                 <p>Users</p>
               </div>
               <div class="icon">
-                <i class="ion ion-person-add"></i>
+                <i class="fa-solid fa-user"></i>
               </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+              <a href="<?= $main_url ?>user/data-user.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <!-- ./col -->
@@ -61,14 +73,14 @@ require "template/sidebar.php";
             <!-- small box -->
             <div class="small-box bg-success">
               <div class="inner">
-                <h3>0<sup style="font-size: 20px">%</sup></h3>
+                <h3><?= $supplier_count ?></h3>
 
                 <p>Supplier</p>
               </div>
               <div class="icon">
-                <i class="ion ion-android-bus"></i>
+                <i class="fa-solid fa-truck-field"></i>
               </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+              <a href="<?= $main_url ?>supplier/data-supplier.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <!-- ./col -->
@@ -76,14 +88,14 @@ require "template/sidebar.php";
             <!-- small box -->
             <div class="small-box bg-warning">
               <div class="inner">
-                <h3>0</h3>
+                <h3><?= $customer_count ?></h3>
 
                 <p>Customer</p>
               </div>
               <div class="icon">
-                <i class="ion ion-person-stalker"></i>
+                <i class="fa-solid fa-users"></i>
               </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+              <a href="<?= $main_url ?>customer/data-customer.php" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <!-- ./col -->
@@ -91,14 +103,13 @@ require "template/sidebar.php";
             <!-- small box -->
             <div class="small-box bg-danger">
               <div class="inner">
-                <h3>0</h3>
-
+                <h3><?= $barang_count ?></h3>
                 <p>Item Barang</p>
               </div>
               <div class="icon">
-                <i class="ion ion-android-cart"></i>
+                <i class="fa-solid fa-cart-shopping"></i>
               </div>
-              <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+              <a href="<?= $main_url ?>barang" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
             </div>
           </div>
           <!-- ./col -->
