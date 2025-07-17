@@ -141,10 +141,29 @@ function menuBarang() {
     return $result;
 }
 
+function laporanStock() {
+    if (userMenu() == 'stock') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+
+function laporanBeli(): string|null {
+    if (userMenu() == 'laporan-pembelian') {
+        $result = 'active';
+    } else {
+        $result = null;
+    }
+    return $result;
+}
+
 function in_date($tgl) {
     $tg = substr($tgl, 8, 2);
     $bln = substr($tgl, 5, 2);
     $thn = substr($tgl, 0, 4);
     return $tg . '-' . $bln . '-' . $thn;
 }
+
 ?>

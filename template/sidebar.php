@@ -76,21 +76,21 @@
             </li>
               <li class="nav-header">Report</li>
             <li class="nav-item">
-              <a href="<?= $main_url ?>laporan-pembelian" class="nav-link">
-                <i class="nav-icon fa-solid fa-cart-shopping"></i>
+              <a href="<?= $main_url ?>laporan-pembelian" class="nav-link <?=laporanBeli()?>">
+                <i class="nav-icon fa-solid fa-chart-pie"></i>
                 <p>Laporan Pembelian</p>
             </a>
             </li>
               <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon fa-solid fa-cart-shopping"></i>
+              <a href="<?= $main_url ?>laporan-penjualan" class="nav-link">
+                <i class="nav-icon fa-solid fa-chart-line"></i>
                 <p>Laporan Penjualan</p>
             </a>
             </li>
             </li>
               <li class="nav-item">
-              <a href="#" class="nav-link">
-                <i class="nav-icon fa-solid fa-cart-shopping"></i>
+              <a href="<?= $main_url ?>Stock" class="nav-link  <?=laporanStock()?>">
+                <i class="nav-icon fa-solid fa-warehouse"></i>
                 <p>Laporan Stock</p>
             </a>
             </li>
