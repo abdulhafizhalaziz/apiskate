@@ -47,7 +47,7 @@ $alert2 = '<small class="text-danger" pl-2 font-italic>Current password tidak sa
         </div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= $main_url ?>Dashboard.php">Home</a></li>
+            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
             <li class="breadcrumb-item active">Password</li>
           </ol>
         </div>

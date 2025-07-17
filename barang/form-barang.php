@@ -61,7 +61,7 @@ if (isset($_POST['simpan'])) {
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="<?= $main_url ?>Dashboard.php">Home</a></li>
+              <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
               <li class="breadcrumb-item"><a href="<?= $main_url ?>barang">Barang</a></li>
               <li class="breadcrumb-item active"><?= $msg != '' ? 'Edit Barang' : 'Add Barang' ?></li>
             </ol>

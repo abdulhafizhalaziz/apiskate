@@ -30,7 +30,7 @@ $penjualan = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$id'" );
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= $main_url ?>Dashboard.php">Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
                         <li class="breadcrumb-item"><a href="<?= $main_url ?>laporan-Penjualan">Laporan Penjualan</a></li>
                         <li class="breadcrumb-item active">Penjualan</li>
                     </ol>
