@@ -14,10 +14,10 @@ function generateNo(){
     return $maxno;
 }
 
-function totalBeli($nobeli){
+function totalBeli($noBeli){
     global $koneksi;
 
-    $totalBeli = mysqli_query($koneksi, "SELECT sum(jml_harga) AS total FROM tbl_beli_detail WHERE no_beli = '$nobeli'");
+    $totalBeli = mysqli_query($koneksi, "SELECT sum(jml_harga) AS total FROM tbl_beli_detail WHERE no_beli = '$noBeli'");
     $data  = mysqli_fetch_assoc($totalBeli);
     return $data["total"] ?? 0;
 }
@@ -25,7 +25,7 @@ function totalBeli($nobeli){
 function insert($data){
     global $koneksi;
 
-    $no       = mysqli_real_escape_string($koneksi, $data['nobeli']);
+    $no       = mysqli_real_escape_string($koneksi, $data['noBeli']);
     $tgl      = mysqli_real_escape_string($koneksi, $data['tglNota']);
     $kode     = mysqli_real_escape_string($koneksi, $data['kodeBrg']);
     $nama     = mysqli_real_escape_string($koneksi, $data['namaBrg']);
@@ -64,13 +64,13 @@ function delete($idbrg, $idbeli, $qty){
 function simpan($data){
     global $koneksi;
 
-    $nobeli     = mysqli_real_escape_string($koneksi, $data['nobeli']);
+    $noBeli     = mysqli_real_escape_string($koneksi, $data['noBeli']);
     $tgl        = mysqli_real_escape_string($koneksi, $data['tglNota']);
     $total      = mysqli_real_escape_string($koneksi, $data['total']);
     $supplier   = mysqli_real_escape_string($koneksi, $data['supplier']);
     $keterangan = mysqli_real_escape_string($koneksi, $data['ketr']);
 
-    $sqlbeli    = "INSERT INTO tbl_beli_head VALUES ('$nobeli','$tgl','$supplier',$total,'$keterangan')";
+    $sqlbeli    = "INSERT INTO tbl_beli_head VALUES ('$noBeli','$tgl','$supplier',$total,'$keterangan')";
     mysqli_query($koneksi, $sqlbeli);
 
     return mysqli_affected_rows($koneksi);

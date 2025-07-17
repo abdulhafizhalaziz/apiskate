@@ -35,11 +35,11 @@ if ($kode) {
     $selectBrg = getData("SELECT * FROM tbl_barang WHERE id_barang = '$kode'")[0];
 }
 
-$noBeli = isset($_GET['nobeli']) ? $_GET['nobeli'] : generateNo();
+$noBeli = isset($_GET['noBeli']) ? $_GET['noBeli'] : generateNo();
 
 if (isset($_POST['addbrg'])) {
     $tgl = $_POST['tglNota'];
-    $nobeli = $_POST['nobeli'];
+    $noBeli = $_POST['noBeli'];
     if (insert($_POST)) {
         echo "<script>document.location = '?tgl=$tgl';</script>";
     }
@@ -81,7 +81,7 @@ if (isset($_POST['simpan'])) {
                             <div class="form-group row mb-2">
                                 <label for="noNota" class="col-sm-2 col-form-label">No Nota</label>
                                 <div class="col-sm-4">
-                                    <input type="text" name="nobeli" class="form-control" id="noNota" value="<?= $noBeli ?>">
+                                    <input type="text" name="noBeli" class="form-control" id="noNota" value="<?= $noBeli ?>">
                                 </div>
                                 <label for="tglNota" class="col-sm-2 col-form-label">Tgl Nota</label>
                                 <div class="col-sm-4">
@@ -96,7 +96,7 @@ if (isset($_POST['simpan'])) {
                                         <?php
                                         $barang = getData("SELECT * FROM tbl_barang");
                                         foreach($barang as $brg){  ?>
-                                            <option value="?pilihbrg=<?= $brg['id_barang'] ?>&nobeli=<?= $noBeli ?>&tgl=<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" <?= isset($_GET['pilihbrg']) && $_GET['pilihbrg'] == $brg['id_barang'] ? 'selected' : '' ?>><?= $brg['id_barang'] . " | " . $brg['nama_barang']?></option>
+                                            <option value="?pilihbrg=<?= $brg['id_barang'] ?>&noBeli=<?= $noBeli ?>&tgl=<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" <?= isset($_GET['pilihbrg']) && $_GET['pilihbrg'] == $brg['id_barang'] ? 'selected' : '' ?>><?= $brg['id_barang'] . " | " . $brg['nama_barang']?></option>
                                         <?php } ?>
                                     </select>
                                 </div>
@@ -227,6 +227,10 @@ if (isset($_POST['simpan'])) {
 
         document.getElementById('kodeBrg').addEventListener('change', function () {
             document.location.href = this.value;
+        });
+
+        document.getElementById('tglNota').addEventListener('change', function () {
+            document.location.href = '?tgl=' + this.value;
         });
 
         document.getElementById('qty').addEventListener('input', function () {
