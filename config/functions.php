@@ -140,6 +140,7 @@ function menuBarang() {
     }
     return $result;
 }
+
 function menuPembelian() {
     if (userMenu() == 'pembelian') {
         $result = 'active';
@@ -188,6 +189,14 @@ function in_date($tgl) {
     $bln = substr($tgl, 5, 2);
     $thn = substr($tgl, 0, 4);
     return $tg . '-' . $bln . '-' . $thn;
+}
+
+function omzet() {
+    global $koneksi;
+    $query = mysqli_query($koneksi, "SELECT SUM(total) AS omzet FROM tbl_jual_head");
+    $data = mysqli_fetch_assoc($query);
+    $omzet = number_format($data['omzet'], 0, ',', '.');
+    return $omzet;
 }
 
 ?>

@@ -91,12 +91,19 @@ if (isset($_POST['simpan'])) {
                             <div class="form-group row mb-2">
                                 <label for="kodeBrg" class="col-sm-2 col-form-label">SKU</label>
                                 <div class="col-sm-10">
-                                    <select id="kodeBrg" class="form-control">
-                                        <option value="">-- Pilih kode barang --</option>
+                                    <select id="kodeBrg" class="form-control select2" data-placeholder="-- Pilih atau ketik untuk mencari barang --">
+                                        <option value="">-- Pilih atau ketik untuk mencari barang --</option>
                                         <?php
-                                        $barang = getData("SELECT * FROM tbl_barang");
+                                        $barang = getData("SELECT * FROM tbl_barang ORDER BY id_barang ASC");
                                         foreach($barang as $brg){  ?>
-                                            <option value="?pilihbrg=<?= $brg['id_barang'] ?>&noBeli=<?= $noBeli ?>&tgl=<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" <?= isset($_GET['pilihbrg']) && $_GET['pilihbrg'] == $brg['id_barang'] ? 'selected' : '' ?>><?= $brg['id_barang'] . " | " . $brg['nama_barang']?></option>
+                                            <option value="<?= $brg['id_barang'] ?>" 
+                                                    data-nama="<?= htmlspecialchars($brg['nama_barang']) ?>"
+                                                    data-stock="<?= $brg['stock'] ?>"
+                                                    data-harga="<?= $brg['harga_beli'] ?>"
+                                                    data-satuan="<?= htmlspecialchars($brg['satuan']) ?>"
+                                                    <?= isset($_GET['pilihbrg']) && $_GET['pilihbrg'] == $brg['id_barang'] ? 'selected' : '' ?>>
+                                                <?= $brg['id_barang'] . " | " . $brg['nama_barang'] . " (Stok: " . $brg['stock'] . ")" ?>
+                                            </option>
                                         <?php } ?>
                                     </select>
                                 </div>
@@ -194,7 +201,7 @@ if (isset($_POST['simpan'])) {
                             <div class="form-group row mb-2">
                             <label for="supplier" class="col-sm-3 col-form-label col-form-label">Supplier</label>
                             <div class="col-sm-9">
-                                <select name="supplier" id="supplier" class="form-control form-control-sm">
+                                <select name="supplier" id="supplier" class="form-control form-control-sm select2" data-placeholder="-- Pilih Supplier --">
                                     <option value="">-- Pilih Supplier --</option>
                                     <?php
                                         $suppliers = getData("SELECT * FROM tbl_supplier");
@@ -223,20 +230,158 @@ if (isset($_POST['simpan'])) {
         </div>
     </section>
 
-    <script>
+    <style>
+        .select2-result-repository {
+            padding: 4px;
+        }
+        .select2-result-repository__title {
+            font-weight: bold;
+            color: #333;
+        }
+        .select2-result-repository__description {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        /* Highlight untuk search results */
+        .select2-results__option--highlighted .select2-result-repository__title {
+            color: #fff;
+        }
+        .select2-results__option--highlighted .select2-result-repository__description {
+            color: #f8f9fa;
+        }
+        
+        /* Custom styling untuk dropdown yang lebih baik */
+        .select2-container--bootstrap4 .select2-results__option {
+            padding: 8px 12px;
+        }
+        
+        /* Info tooltip untuk shortcut keyboard */
+        .form-group .col-form-label {
+            position: relative;
+        }
+        
+        .keyboard-hint {
+            font-size: 0.75em;
+            color: #6c757d;
+            font-weight: normal;
+            margin-left: 5px;
+        }
+    </style>
 
-        document.getElementById('kodeBrg').addEventListener('change', function () {
-            document.location.href = this.value;
+    <script>
+        // Initialize Select2
+        $(document).ready(function() {
+            // Initialize Select2 for dropdown barang dengan search lokal + AJAX fallback
+            $('#kodeBrg').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                placeholder: '-- Pilih atau ketik untuk mencari barang --',
+                allowClear: true,
+                minimumInputLength: 0, // Tidak perlu minimum input, bisa langsung dropdown
+                templateResult: function(item) {
+                    if (item.loading) {
+                        return item.text;
+                    }
+                    // Custom template untuk menampilkan info barang yang lebih detail
+                    if (item.element && $(item.element).data('harga')) {
+                        var $container = $(
+                            "<div class='select2-result-repository clearfix'>" +
+                            "<div class='select2-result-repository__title'></div>" +
+                            "<div class='select2-result-repository__description'></div>" +
+                            "</div>"
+                        );
+                        $container.find('.select2-result-repository__title').text(item.text);
+                        $container.find('.select2-result-repository__description').text('Harga Beli: Rp ' + numberFormat($(item.element).data('harga')));
+                        return $container;
+                    }
+                    return item.text;
+                },
+                templateSelection: function(item) {
+                    return item.text || item.id;
+                }
+            });
+
+            // Handle selection change - auto fill form fields dari data attributes
+            $('#kodeBrg').on('select2:select', function (e) {
+                var data = e.params.data;
+                var $option = $(data.element);
+                
+                if (data.id && $option.length) {
+                    // Fill form fields automatically dari data attributes
+                    $('input[name="kodeBrg"]').val(data.id);
+                    $('input[name="namaBrg"]').val($option.data('nama') || '');
+                    $('input[name="stok"]').val($option.data('stock') || '');
+                    $('input[name="satuan"]').val($option.data('satuan') || '');
+                    $('input[name="harga"]').val($option.data('harga') || '');
+                    
+                    // Set qty ke 1 dan fokus, hitung total
+                    var qty = 1;
+                    var harga = $option.data('harga') || 0;
+                    $('input[name="qty"]').val(qty).focus();
+                    $('input[name="jmlHarga"]').val(qty * harga);
+                }
+            });
+
+            // Clear form when selection is cleared
+            $('#kodeBrg').on('select2:clear', function () {
+                $('input[name="kodeBrg"]').val('');
+                $('input[name="namaBrg"]').val('');
+                $('input[name="stok"]').val('');
+                $('input[name="satuan"]').val('');
+                $('input[name="harga"]').val('');
+                $('input[name="qty"]').val('');
+                $('input[name="jmlHarga"]').val('');
+            });
+            
+            // Initialize Select2 for dropdown supplier
+            $('#supplier').select2({
+                theme: 'bootstrap4',
+                width: '100%',
+                placeholder: '-- Pilih Supplier --',
+                allowClear: true
+            });
+
+            // Enhanced search functionality - search in both ID and name
+            $('#kodeBrg').on('select2:open', function() {
+                // Custom search behavior
+                setTimeout(function() {
+                    $('.select2-search__field').on('keyup', function() {
+                        var searchTerm = $(this).val().toLowerCase();
+                        if (searchTerm.length > 0) {
+                            // Enhanced filtering logic akan ditangani oleh Select2 secara otomatis
+                            // karena kita sudah punya semua data di option
+                        }
+                    });
+                }, 100);
+            });
         });
 
+        // Helper function to format numbers
+        function numberFormat(num) {
+            return parseInt(num).toLocaleString('id-ID');
+        }
+
+        // Event listener untuk perubahan tanggal
         document.getElementById('tglNota').addEventListener('change', function () {
             document.location.href = '?tgl=' + this.value;
         });
 
+        // Event listener untuk perhitungan qty
         document.getElementById('qty').addEventListener('input', function () {
-            const qty = parseInt(this.value);
-            const harga = parseInt(document.getElementById('harga').value);
+            const qty = parseInt(this.value) || 0;
+            const harga = parseInt(document.getElementById('harga').value) || 0;
             document.getElementById('jmlHarga').value = qty * harga;
+        });
+
+        // Keyboard shortcut untuk fokus ke dropdown barang
+        $(document).keydown(function(e) {
+            // Alt + B untuk fokus ke dropdown barang
+            if (e.altKey && e.keyCode === 66) {
+                e.preventDefault();
+                $('#kodeBrg').select2('open');
+            }
         });
     </script>
 

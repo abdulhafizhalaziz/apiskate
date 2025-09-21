@@ -32,9 +32,27 @@
 <script src="<?= $main_url ?>asset/AdminLTE-3.2.0/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
 <script src="<?= $main_url ?>asset/AdminLTE-3.2.0/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
 <script src="<?= $main_url ?>asset/AdminLTE-3.2.0/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+<!-- Select2 -->
+<script src="<?= $main_url ?>asset/AdminLTE-3.2.0/plugins/select2/js/select2.full.min.js"></script>
 
 <script>
   $(function() {
+    let tema = sessionStorage.getItem('tema');
+    if (tema === 'dark-mode') {
+      $('body').addClass('dark-mode');
+      $('#cekDark').prop('checked', true);
+    }
+
+    $(document).on('click', "#cekDark", function(e) {
+      if ($('#cekDark').is(':checked')) {
+        $('body').addClass('dark-mode');
+        sessionStorage.setItem('tema', 'dark-mode');
+      } else {
+        $('body').removeClass('dark-mode');
+        sessionStorage.removeItem('tema');
+      }
+    });
+
     $('#tblData').DataTable();
   });
 </script>
