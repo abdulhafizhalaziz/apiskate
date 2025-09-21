@@ -88,7 +88,7 @@ $penjualan = getData("SELECT * FROM tbl_jual_head");
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Periode Pembelian</h4>
+                <h4 class="modal-title">Periode Penjualan</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -120,7 +120,7 @@ $penjualan = getData("SELECT * FROM tbl_jual_head");
     let tgl2 = document.getElementById('tgl2');
     function printDoc() {
         if (tgl1.value != "" && tgl2.value != "") {
-            window.open("../report/r-beli.php?tgl1=" + tgl1.value + "&tgl2=" + tgl2.value, '_blank', 'width=900,height=600,left=100');
+            window.open("../report/r-jual.php?tgl1=" + tgl1.value + "&tgl2=" + tgl2.value, '_blank', 'width=900,height=600,left=100');
         }
     }
 </script>
