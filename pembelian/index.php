@@ -40,16 +40,27 @@ $noBeli = isset($_GET['noBeli']) ? $_GET['noBeli'] : generateNo();
 if (isset($_POST['addbrg'])) {
     $tgl = $_POST['tglNota'];
     $noBeli = $_POST['noBeli'];
-    if (insert($_POST)) {
-        echo "<script>document.location = '?tgl=$tgl';</script>";
+    $kodeBrg = trim($_POST['kodeBrg']);
+    $qty = trim($_POST['qty']);
+    if ($kodeBrg == '' || $qty == '' || $qty <= 0) {
+        echo "<script>alert('Barang dan Qty harus diisi dengan benar!');</script>";
+    } else {
+        if (insert($_POST)) {
+            echo "<script>document.location = '?tgl=$tgl';</script>";
+        }
     }
 }
 if (isset($_POST['simpan'])) {
-    if (simpan($_POST)) {
-        echo "<script>
-        alert('Data pembelian berhasil disimpan.');
-        document.location = 'index.php?msg=sukses';
-        </script>";
+    $supplier = trim($_POST['supplier']);
+    $noBeli = $_POST['noBeli'];
+    $brgDetail = getData("SELECT COUNT(*) as jml FROM tbl_beli_detail WHERE no_beli = '$noBeli'");
+    $jmlBrg = $brgDetail[0]['jml'] ?? 0;
+    if ($supplier == '' || $jmlBrg == 0) {
+        echo "<script>alert('Supplier harus dipilih dan minimal 1 barang ditambahkan!');</script>";
+    } else {
+        if (simpan($_POST)) {
+            echo "<script>\n        alert('Data pembelian berhasil disimpan.');\n        document.location = 'index.php?msg=sukses';\n        </script>";
+        }
     }
 }
 
@@ -221,7 +232,7 @@ if (isset($_POST['simpan'])) {
                         </div>
                         </div>
                         <div class="col lg-6 p-2">
-                            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block"><i class="fa fa-save"></i> Simpan</button>
+                            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block" disabled><i class="fa fa-save"></i> Simpan</button>
                         </div>
                     </div>
                 </div>
@@ -383,6 +394,26 @@ if (isset($_POST['simpan'])) {
                 $('#kodeBrg').select2('open');
             }
         });
+        // Enable/disable tombol simpan sesuai validasi supplier dan barang
+        function checkSimpanButton() {
+            const supplier = document.getElementById('supplier').value;
+            const table = document.querySelectorAll('table tbody tr');
+            const simpanBtn = document.getElementById('simpan');
+            // Ada minimal 1 barang di tabel dan supplier dipilih
+            if (supplier !== '' && table.length > 0) {
+                simpanBtn.disabled = false;
+            } else {
+                simpanBtn.disabled = true;
+            }
+        }
+
+        document.getElementById('supplier').addEventListener('change', checkSimpanButton);
+        // Cek ulang tombol simpan saat halaman dimuat dan setelah tambah/hapus barang
+        window.addEventListener('DOMContentLoaded', function() {
+            checkSimpanButton();
+        });
+        // Juga cek ulang setiap 1 detik (jika ada perubahan tabel via ajax, dsb)
+        setInterval(checkSimpanButton, 1000);
     </script>
 
 <?php require "../template/footer.php";?>

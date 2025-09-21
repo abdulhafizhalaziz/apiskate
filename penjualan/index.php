@@ -52,22 +52,35 @@ if ($kode) {
 
 $noJual = generateNo();
 
+
 if (isset($_POST['addbrg'])) {
     $tgl = $_POST['tglNota'];
-    if (insert($_POST)) {
-        echo "<script>document.location = '?tgl=$tgl';</script>";
+    $barcode = trim($_POST['barcode']);
+    $qty = trim($_POST['qty']);
+    if ($barcode == '' || $qty == '' || $qty <= 0) {
+        echo "<script>alert('Barcode dan Qty harus diisi dengan benar!');</script>";
+    } else {
+        if (insert($_POST)) {
+            echo "<script>document.location = '?tgl=$tgl';</script>";
+        }
     }
 }
 
+
 if (isset($_POST['simpan'])) {
     $nota = $_POST['noJual'];
-    if (simpan($_POST)) {
-        echo "<script>
-        alert('Data penjualan berhasil disimpan.');
-        var win = window.open('../report/r-struk.php?nota=$nota', 'Struk Belanja', 'width=260,height=400,left=10,top=10');
-        if (win) { win.focus(); }
-        window.location = 'index.php';
-        </script>";
+    $bayar = trim($_POST['bayar']);
+    if ($bayar == '' || $bayar <= 0) {
+        echo "<script>alert('Jumlah bayar harus diisi!');</script>";
+    } else {
+        if (simpan($_POST)) {
+            echo "<script>
+            alert('Data penjualan berhasil disimpan.');
+            var win = window.open('../report/r-struk.php?nota=$nota', 'Struk Belanja', 'width=260,height=400,left=10,top=10');
+            if (win) { win.focus(); }
+            window.location = 'index.php';
+            </script>";
+        }
     }
 }
 ?>
@@ -258,8 +271,8 @@ if (isset($_POST['simpan'])) {
                         </div>
                     </div>
                     <div class="col lg-4 p-2">
-                        <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block"><i
-                                class="fa fa-save"></i> Simpan</button>
+            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block" disabled><i
+                class="fa fa-save"></i> Simpan</button>
                     </div>
             </form>
         </div>
@@ -275,11 +288,29 @@ if (isset($_POST['simpan'])) {
             document.getElementById('jmlHarga').value = qty * harga;
         });
 
+        function checkSimpanButton() {
+            const bayar = parseInt(document.getElementById('bayar').value) || 0;
+            const total = parseInt(document.getElementById('total').value) || 0;
+            const simpanBtn = document.getElementById('simpan');
+            // Tombol aktif jika bayar >= total dan bayar > 0
+            if (bayar >= total && bayar > 0 && total > 0) {
+                simpanBtn.disabled = false;
+            } else {
+                simpanBtn.disabled = true;
+            }
+        }
+
         document.getElementById('bayar').addEventListener('input', function () {
             const bayar = parseInt(this.value) || 0;
             const total = parseInt(document.getElementById('total').value) || 0;
             const kembalian = bayar - total;
             document.getElementById('kembalian').value = kembalian >= 0 ? kembalian : 0;
+            checkSimpanButton();
+        });
+
+        // Pastikan tombol simpan diupdate saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', function() {
+            checkSimpanButton();
         });
     </script>
     <?php require "../template/footer.php"; ?>
