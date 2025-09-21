@@ -64,12 +64,9 @@ if (isset($_POST['simpan'])) {
     if (simpan($_POST)) {
         echo "<script>
         alert('Data penjualan berhasil disimpan.');
-        windows.onload = function() {
-        let win = window.open('../report/r-struk.php?nota=$nota', 'Struk Belanja', 'width=260,height=400,left=10,top=10','_blank');
-        if (win) {
-            win.focus();
-            window.location = 'index.php';
-    }
+        var win = window.open('../report/r-struk.php?nota=$nota', 'Struk Belanja', 'width=260,height=400,left=10,top=10');
+        if (win) { win.focus(); }
+        window.location = 'index.php';
         </script>";
     }
 }

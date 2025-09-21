@@ -81,7 +81,7 @@ function simpan($data){
     $bayar      = mysqli_real_escape_string($koneksi, $data['bayar']);
     $kembalian = mysqli_real_escape_string($koneksi, $data['kembalian']);
 
-    $sqlJual    = "INSERT INTO tbl_jual_head VALUES ('$noJual','$tgl','$customer',$total,'$keterangan', $bayar, $kembalian)";
+    $sqlJual    = "INSERT INTO tbl_jual_head VALUES ('$noJual','$tgl','$customer',$total,'$keterangan', '$bayar', '$kembalian')";
     mysqli_query($koneksi, $sqlJual);
 
     return mysqli_affected_rows($koneksi);
