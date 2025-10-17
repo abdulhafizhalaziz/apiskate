@@ -18,10 +18,12 @@ require "../template/sidebar.php";
 
 $alert  = '';
 
+
 if (isset($_POST['simpan'])) {
+  $_POST['tipe'] = 'CUSTOMER';
   if(insert($_POST)){
     $alert = '<div class="alert alert-success alert-dismissible fade show" role="alert">
-  <i class="icon fas fa-check"></i>Supplier berhasil ditambahkan..
+  <i class="icon fas fa-check"></i>Customer berhasil ditambahkan..
   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
     <span aria-hidden="true">&times;</span>
   </button>

@@ -18,7 +18,9 @@ require "../template/sidebar.php";
 
 $alert  = '';
 
+
 if (isset($_POST['simpan'])) {
+  $_POST['tipe'] = 'SUPPLIER';
   if(insert($_POST)){
     $alert = '<div class="alert alert-success alert-dismissible fade show" role="alert">
   <i class="icon fas fa-check"></i>Supplier berhasil ditambahkan..

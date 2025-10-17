@@ -30,10 +30,12 @@ if ($msg == 'deleted') {
     }
 }
 
+
 $kode = isset($_GET['pilihbrg']) ? $_GET['pilihbrg'] : '';
 if ($kode) {
     $selectBrg = getData("SELECT * FROM tbl_barang WHERE id_barang = '$kode'")[0];
 }
+
 
 $noBeli = isset($_GET['noBeli']) ? $_GET['noBeli'] : generateNo();
 
@@ -53,7 +55,7 @@ if (isset($_POST['addbrg'])) {
 if (isset($_POST['simpan'])) {
     $supplier = trim($_POST['supplier']);
     $noBeli = $_POST['noBeli'];
-    $brgDetail = getData("SELECT COUNT(*) as jml FROM tbl_beli_detail WHERE no_beli = '$noBeli'");
+    $brgDetail = getData("SELECT COUNT(*) as jml FROM tbl_transaksi_detail WHERE no_transaksi = '$noBeli'");
     $jmlBrg = $brgDetail[0]['jml'] ?? 0;
     if ($supplier == '' || $jmlBrg == 0) {
         echo "<script>alert('Supplier harus dipilih dan minimal 1 barang ditambahkan!');</script>";
@@ -135,7 +137,7 @@ if (isset($_POST['simpan'])) {
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <input type="hidden" value="<?= $kode ?>" name="kodeBrg">
+                                <input type="hidden" value="<?= $kode ?>" name="kodeBrg" id="kodeBrgHidden" required>
                                 <label for="namaBrg">Nama Barang</label>
                                 <input type="text" name="namaBrg" class="form-control form-control-sm" id="namaBrg" value="<?= $selectBrg['nama_barang'] ?? '' ?>" readonly>
                             </div>
@@ -189,17 +191,17 @@ if (isset($_POST['simpan'])) {
                         <tbody>
                             <?php
                             $no = 1;
-                            $brgDetail = getData("SELECT * FROM tbl_beli_detail WHERE no_beli = '$noBeli'");
+                            $brgDetail = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$noBeli'");
                             foreach ($brgDetail as $detail) { ?>
                                 <tr>
                                     <td><?= $no++ ?></td>
-                                    <td><?= $detail['kode_brg'] ?></td>
+                                    <td><?= $detail['kode_barang'] ?></td>
                                     <td><?= $detail['nama_brg'] ?></td>
-                                    <td class="text-right"><?= number_format($detail['harga_beli'], 0, ',', '.') ?></td>
+                                    <td class="text-right"><?= number_format($detail['harga'], 0, ',', '.') ?></td>
                                     <td class="text-right"><?= $detail['qty'] ?></td>
                                     <td class="text-right"><?= number_format($detail['jml_harga'], 0, ',', '.') ?></td>
                                     <td class="text-center">
-                                        <a href="?idbrg=<?= $detail['kode_brg'] ?>&idbeli=<?= $detail['no_beli'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $detail['tgl_beli'] ?>&msg=deleted" class="btn btn-sm btn-danger" onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i class="fas fa-trash"></i></a>
+                                        <a href="?idbrg=<?= $detail['kode_barang'] ?>&idbeli=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $detail['tgl_transaksi'] ?>&msg=deleted" class="btn btn-sm btn-danger" onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>
                             <?php } ?>
@@ -215,7 +217,7 @@ if (isset($_POST['simpan'])) {
                                 <select name="supplier" id="supplier" class="form-control form-control-sm select2" data-placeholder="-- Pilih Supplier --">
                                     <option value="">-- Pilih Supplier --</option>
                                     <?php
-                                        $suppliers = getData("SELECT * FROM tbl_supplier");
+                                        $suppliers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'SUPPLIER'");
                                         foreach($suppliers as $supplier){  ?>
                                             <option value="<?= $supplier['nama'] ?>"><?= $supplier['nama'] ?></option>
                                             <?php

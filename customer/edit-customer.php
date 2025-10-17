@@ -25,9 +25,9 @@ if (isset($_POST['update'])) {
     }
 }
 
-$id = $_GET['id'];
 
-$sqlEdit = "SELECT * FROM tbl_customer WHERE id_customer = $id";
+$id = $_GET['id'];
+$sqlEdit = "SELECT * FROM tbl_relasi WHERE id_relasi = $id AND tipe = 'CUSTOMER'";
 $customer = getData($sqlEdit)[0];
 
 ?>
@@ -63,7 +63,7 @@ $customer = getData($sqlEdit)[0];
             </div>
             <div class="card-body">
                 <div class="row">
-                    <input type="hidden" name='id' value="<?= $customer['id_customer'] ?>">
+                    <input type="hidden" name='id' value="<?= $customer['id_relasi'] ?>">
                     <div class="col-lg-8 mb-3">
                         <div class="form-group">
                             <label for="name">Nama</label>

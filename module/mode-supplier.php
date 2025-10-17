@@ -12,9 +12,10 @@ function insert($data){
     $telpon  = mysqli_real_escape_string($koneksi, $data['telpon']);
     $alamat  = mysqli_real_escape_string($koneksi, $data['alamat']);
     $ketr    = mysqli_real_escape_string($koneksi, $data['ketr']);
+    $tipe    = isset($data['tipe']) ? mysqli_real_escape_string($koneksi, $data['tipe']) : 'SUPPLIER';
 
-    $sqlSupplier    = "INSERT INTO tbl_supplier VALUES (null, '$nama', '$telpon', '$ketr', '$alamat')";
-    mysqli_query($koneksi, $sqlSupplier);
+    $sqlRelasi = "INSERT INTO tbl_relasi (nama, telpon, alamat, deskripsi, tipe) VALUES ('$nama', '$telpon', '$alamat', '$ketr', '$tipe')";
+    mysqli_query($koneksi, $sqlRelasi);
 
     return mysqli_affected_rows($koneksi);
 }
