@@ -15,15 +15,20 @@ require "template/header.php";
 require "template/navbar.php";
 require "template/sidebar.php";
 
+
+// User count (no change)
 $users = getData("SELECT COUNT(*) as total FROM tbl_user");
 $user_count = $users[0]['total'];
 
-$suppliers = getData("SELECT COUNT(*) as total FROM tbl_supplier");
+// Supplier count (from tbl_relasi where tipe='SUPPLIER')
+$suppliers = getData("SELECT COUNT(*) as total FROM tbl_relasi WHERE tipe='SUPPLIER'");
 $supplier_count = $suppliers[0]['total'];
 
-$customers = getData("SELECT COUNT(*) as total FROM tbl_customer");
+// Customer count (from tbl_relasi where tipe='CUSTOMER')
+$customers = getData("SELECT COUNT(*) as total FROM tbl_relasi WHERE tipe='CUSTOMER'");
 $customer_count = $customers[0]['total'];
 
+// Barang count (no change)
 $barang = getData("SELECT COUNT(*) as total FROM tbl_barang");
 $barang_count = $barang[0]['total'];
 
@@ -128,7 +133,10 @@ $barang_count = $barang[0]['total'];
             <table class="table">
               <tbody>
                 <?php
-                $stok = getData("SELECT * FROM tbl_barang WHERE stock < stock_minimal");
+
+
+                // Query langsung ke tbl_barang untuk stok minimal
+                $stok = getData("SELECT * FROM tbl_barang WHERE stock <= stock_minimal");
 
                 foreach ($stok as $key => $value) {
                   echo "<tr style='background-color: #f8d7da; color: #721c24;'>

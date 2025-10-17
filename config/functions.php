@@ -191,9 +191,11 @@ function in_date($tgl) {
     return $tg . '-' . $bln . '-' . $thn;
 }
 
+
+// Omzet penjualan dari tabel baru (tbl_transaksi)
 function omzet() {
     global $koneksi;
-    $query = mysqli_query($koneksi, "SELECT SUM(total) AS omzet FROM tbl_jual_head");
+    $query = mysqli_query($koneksi, "SELECT SUM(total) AS omzet FROM tbl_transaksi WHERE tipe_transaksi = 'JUAL'");
     $data = mysqli_fetch_assoc($query);
     $omzet = number_format($data['omzet'], 0, ',', '.');
     return $omzet;
