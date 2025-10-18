@@ -59,7 +59,7 @@ if (isset($_POST['simpan'])) {
             <div class="card-header">
               <h3 class="card-title"><i class="fas fa-plus fa-sm"></i> Add Supplier</h3>
               <button type="submit" name="simpan" class="btn btn-primary btn-sm float-right"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
-              <button type="reset" class="btn btn-danger btn-sm float-right mr-1">Reset</button>
+              <button type="reset" class="btn btn-danger btn-sm float-right mr-1">Atur ulang</button>
             </div>
             <div class="card-body">
                 <div class="row">
