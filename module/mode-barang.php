@@ -38,14 +38,12 @@ function insert($data){
         return false;
     }
 
-    // upload gambar barang
     if ($gambar != null) {
         $gambar = uploadimg(null, $id);
     } else {
         $gambar = 'barang.jpg';
     }
     
-    // gambar tidak sesuai validasi
     if ($gambar == '') {
         return false;
     }
@@ -81,17 +79,13 @@ function update($data){
     $gbrLama    = mysqli_real_escape_string($koneksi, $data['oldImg']);
     $gambar     = mysqli_real_escape_string($koneksi, $_FILES['image']['name']);
 
-    // barcode lama
     $queryBarcode = mysqli_query($koneksi, "SELECT * FROM tbl_barang WHERE id_barang = '$id'");
     $dataBrg      = mysqli_fetch_assoc($queryBarcode);
     $curBarcode   = $dataBrg['barcode'];
 
-    // barcode baru
      $cekBarcode = mysqli_query($koneksi, "SELECT * FROM tbl_barang WHERE barcode = '$barcode'");
 
-    // jika barcode diganti
     if ($barcode !== $curBarcode) {
-        //jika barcode sudah ada
         if (mysqli_num_rows($cekBarcode)) {
         echo '<script>alert("Kode barcoode sudah ada, barang gagal diperbaharui")</script>';
         return false;
@@ -99,7 +93,6 @@ function update($data){
     
     }
 
-    // cek gambar
     if (!empty($_FILES['image']['name'])) {
         $url = "index.php";
         if ($gbrLama == 'barang.jpg') {

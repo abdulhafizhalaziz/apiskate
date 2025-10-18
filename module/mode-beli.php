@@ -22,16 +22,13 @@ function totalBeli($noBeli){
     return $data["total"] ?? 0;
 }
 
-// Pastikan ada supplier default untuk header draft saat user belum memilih supplier
 function ensureDefaultSupplierId(): int {
     global $koneksi;
     $name = 'Supplier Umum';
-    // Cari jika sudah ada
     $res = mysqli_query($koneksi, "SELECT id_relasi FROM tbl_relasi WHERE tipe='SUPPLIER' AND nama='$name' LIMIT 1");
     if ($res && ($row = mysqli_fetch_assoc($res))) {
         return (int)$row['id_relasi'];
     }
-    // Buat supplier default
     $sql = "INSERT INTO tbl_relasi (nama, telpon, alamat, deskripsi, tipe) VALUES ('$name', '-', '-', 'Supplier default otomatis', 'SUPPLIER')";
     mysqli_query($koneksi, $sql);
     return (int)mysqli_insert_id($koneksi);
@@ -56,14 +53,11 @@ function insert($data){
         return false;
     }
 
-    // Pastikan header transaksi sudah ada (karena FK pada detail mengarah ke header)
     $cekHeader = mysqli_query($koneksi, "SELECT 1 FROM tbl_transaksi WHERE no_transaksi = '$no' LIMIT 1");
     if (!$cekHeader || mysqli_num_rows($cekHeader) === 0) {
-        // Header belum ada; jika supplier belum dipilih, gunakan supplier default
         if ($supplier <= 0) {
             $supplier = ensureDefaultSupplierId();
         } else {
-            // Validasi supplier tipe SUPPLIER jika user sudah memilih
             $cekSupp = mysqli_query($koneksi, "SELECT 1 FROM tbl_relasi WHERE id_relasi = $supplier AND tipe = 'SUPPLIER' LIMIT 1");
             if (!$cekSupp || mysqli_num_rows($cekSupp) === 0) {
                 $_SESSION['last_error'] = 'Supplier tidak valid/bukan SUPPLIER.';
@@ -71,7 +65,6 @@ function insert($data){
                 return false;
             }
         }
-        // Buat header awal dengan total 0, tipe BELI (supplier bisa default)
         $sqlHdr = "INSERT INTO tbl_transaksi (no_transaksi, tgl_transaksi, tipe_transaksi, id_relasi, total, keterangan)
                     VALUES ('$no', STR_TO_DATE('$tgl','%Y-%m-%d'), 'BELI', $supplier, 0, '$keterangan')";
         $okHdr = mysqli_query($koneksi, $sqlHdr);
@@ -87,14 +80,12 @@ function insert($data){
         return false;
     }
 
-    // Skema baru: detail tidak memiliki kolom tgl_transaksi
     $sqlBeli = "INSERT INTO tbl_transaksi_detail (no_transaksi, kode_barang, nama_brg, qty, harga, jml_harga) VALUES ('$no', '$kode', '$nama', $qty, $harga, $jmlharga)";
     $okDet = mysqli_query($koneksi, $sqlBeli);
     if (!$okDet) {
         $_SESSION['last_error'] = 'Gagal menambah detail: '.mysqli_error($koneksi);
         return false;
     }
-    // Tambah stok barang saat pembelian ditambahkan
     $upd = mysqli_query($koneksi, "UPDATE tbl_barang SET stock = stock + $qty WHERE id_barang = '$kode'");
     if (!$upd) {
         $_SESSION['last_error'] = 'Detail masuk, tetapi gagal update stok: '.mysqli_error($koneksi);
@@ -108,11 +99,8 @@ function delete($idbrg, $idbeli, $qty){
     $sqlDel = "DELETE FROM tbl_transaksi_detail WHERE kode_barang = '$idbrg' AND no_transaksi = '$idbeli'";
     $okDel = mysqli_query($koneksi, $sqlDel);
 
-    // Update stock sudah otomatis via trigger, baris berikut bisa dihapus jika sudah pakai trigger
     if ($okDel) {
-        // Kurangi stok kembali saat detail pembelian dihapus
         mysqli_query($koneksi, "UPDATE tbl_barang SET stock = GREATEST(stock - $qty, 0) WHERE id_barang = '$idbrg'");
-        // Jika tidak ada detail tersisa, hapus header pembelian
         $resCnt = mysqli_query($koneksi, "SELECT COUNT(*) AS jml FROM tbl_transaksi_detail WHERE no_transaksi = '$idbeli'");
         $rowCnt = $resCnt ? mysqli_fetch_assoc($resCnt) : ['jml' => 0];
         $jml = (int)($rowCnt['jml'] ?? 0);
@@ -129,18 +117,14 @@ function simpan($data){
 
     $noBeli     = mysqli_real_escape_string($koneksi, $data['noBeli']);
     $tglIn      = $data['tglNota'] ?? '';
-    // Fallback tanggal jika kosong/tidak valid -> hari ini
     $tglPattern = '/^\d{4}-\d{2}-\d{2}$/';
     $tgl        = mysqli_real_escape_string($koneksi, (preg_match($tglPattern, $tglIn) ? $tglIn : date('Y-m-d')));
-    // Jangan percaya input hidden total; hitung ulang dari detail di server
     $resTotal   = mysqli_query($koneksi, "SELECT COALESCE(SUM(jml_harga),0) AS total FROM tbl_transaksi_detail WHERE no_transaksi = '$noBeli'");
     $rowTotal   = $resTotal ? mysqli_fetch_assoc($resTotal) : ['total' => 0];
     $total      = $rowTotal['total'] ?? 0;
-    // Pada skema baru, field yang disimpan adalah id_relasi (FK ke tbl_relasi)
-    $supplier   = (int) ($data['supplier'] ?? 0); // id_relasi
+    $supplier   = (int) ($data['supplier'] ?? 0);
     $keterangan = mysqli_real_escape_string($koneksi, $data['ketr'] ?? '');
 
-    // Validasi supplier benar dan bertipe SUPPLIER
     if ($supplier <= 0) {
         $_SESSION['last_error'] = 'Supplier tidak valid';
         return false;
@@ -151,17 +135,14 @@ function simpan($data){
         return false;
     }
 
-    // Validasi: harus ada minimal 1 detail untuk no_transaksi ini
     $resCntDet = mysqli_query($koneksi, "SELECT COUNT(*) AS jml FROM tbl_transaksi_detail WHERE no_transaksi = '$noBeli'");
     $rowCntDet = $resCntDet ? mysqli_fetch_assoc($resCntDet) : ['jml' => 0];
     if ((int)($rowCntDet['jml'] ?? 0) === 0) {
-        // Tidak ada detail, pastikan header yatim dibersihkan dan batalkan simpan
         mysqli_query($koneksi, "DELETE FROM tbl_transaksi WHERE no_transaksi = '$noBeli' AND tipe_transaksi = 'BELI'");
         $_SESSION['last_error'] = 'Tidak ada detail barang pada transaksi ini.';
         return false;
     }
 
-    // Simpan header transaksi; gunakan upsert agar aman jika nomor sudah pernah dibuat
     $sqlBeli = "INSERT INTO tbl_transaksi (no_transaksi, tgl_transaksi, tipe_transaksi, id_relasi, total, keterangan)
                 VALUES ('$noBeli', STR_TO_DATE('$tgl','%Y-%m-%d'), 'BELI', $supplier, $total, '$keterangan')
                 ON DUPLICATE KEY UPDATE 

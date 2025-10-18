@@ -13,8 +13,6 @@ function insert($data){
     $alamat  = mysqli_real_escape_string($koneksi, $data['alamat']);
     $ketr    = mysqli_real_escape_string($koneksi, $data['ketr']);
     $tipe    = 'CUSTOMER';
-
-    // Skema: masukkan ke tbl_relasi dgn tipe CUSTOMER
     $sqlRelasi = "INSERT INTO tbl_relasi (nama, telpon, alamat, deskripsi, tipe) VALUES ('$nama', '$telpon', '$alamat', '$ketr', '$tipe')";
     mysqli_query($koneksi, $sqlRelasi);
 

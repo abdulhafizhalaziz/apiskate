@@ -23,7 +23,6 @@ if (isset($_GET['msg'])) {
 }
 
 $alert = '';
-// Jalankan fungsi hapus barang
 if ($msg == 'deleted') {
     $id = $_GET['id'];
     $gbr = $_GET['gbr'];

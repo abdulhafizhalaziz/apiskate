@@ -39,7 +39,6 @@ if ($kode) {
 
 $noBeli = isset($_GET['noBeli']) ? $_GET['noBeli'] : generateNo();
 
-// Tanggal nota otomatis hari ini (fallback jika query string tidak valid)
 $tglNotaVal = (isset($_GET['tgl']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['tgl'])) ? $_GET['tgl'] : date('Y-m-d');
 
 if (isset($_POST['addbrg'])) {
@@ -266,25 +265,18 @@ if (isset($_POST['simpan'])) {
             color: #666;
             margin-top: 2px;
         }
-        
-        /* Highlight untuk search results */
         .select2-results__option--highlighted .select2-result-repository__title {
             color: #fff;
         }
         .select2-results__option--highlighted .select2-result-repository__description {
             color: #f8f9fa;
         }
-        
-        /* Custom styling untuk dropdown yang lebih baik */
         .select2-container--bootstrap4 .select2-results__option {
             padding: 8px 12px;
         }
-        
-        /* Info tooltip untuk shortcut keyboard */
         .form-group .col-form-label {
             position: relative;
         }
-        
         .keyboard-hint {
             font-size: 0.75em;
             color: #6c757d;
@@ -294,20 +286,17 @@ if (isset($_POST['simpan'])) {
     </style>
 
     <script>
-        // Initialize Select2
         $(document).ready(function() {
-            // Initialize Select2 for dropdown barang dengan search lokal + AJAX fallback
             $('#kodeBrg').select2({
                 theme: 'bootstrap4',
                 width: '100%',
                 placeholder: '-- Pilih atau ketik untuk mencari barang --',
                 allowClear: true,
-                minimumInputLength: 0, // Tidak perlu minimum input, bisa langsung dropdown
+                minimumInputLength: 0,
                 templateResult: function(item) {
                     if (item.loading) {
                         return item.text;
                     }
-                    // Custom template untuk menampilkan info barang yang lebih detail
                     if (item.element && $(item.element).data('harga')) {
                         var $container = $(
                             "<div class='select2-result-repository clearfix'>" +
@@ -326,7 +315,6 @@ if (isset($_POST['simpan'])) {
                     return item.text;
                 },
                 templateSelection: function(item) {
-                    // Tampilkan hanya ID Barang saat sudah terpilih
                     if (item.element) {
                         return item.id || '';
                     }
@@ -334,20 +322,17 @@ if (isset($_POST['simpan'])) {
                 }
             });
 
-            // Handle selection change - auto fill form fields dari data attributes
             $('#kodeBrg').on('select2:select', function (e) {
                 var data = e.params.data;
                 var $option = $(data.element);
                 
                 if (data.id && $option.length) {
-                    // Fill form fields automatically dari data attributes
                     $('input[name="kodeBrg"]').val(data.id);
                     $('input[name="namaBrg"]').val($option.data('nama') || '');
                     $('input[name="stok"]').val($option.data('stock') || '');
                     $('input[name="satuan"]').val($option.data('satuan') || '');
                     $('input[name="harga"]').val($option.data('harga') || '');
                     
-                    // Set qty ke 1 dan fokus, hitung total
                     var qty = 1;
                     var harga = $option.data('harga') || 0;
                     $('input[name="qty"]').val(qty).focus();
@@ -355,7 +340,6 @@ if (isset($_POST['simpan'])) {
                 }
             });
 
-            // Clear form when selection is cleared
             $('#kodeBrg').on('select2:clear', function () {
                 $('input[name="kodeBrg"]').val('');
                 $('input[name="namaBrg"]').val('');
@@ -366,7 +350,6 @@ if (isset($_POST['simpan'])) {
                 $('input[name="jmlHarga"]').val('');
             });
             
-            // Initialize Select2 for dropdown supplier
             $('#supplier').select2({
                 theme: 'bootstrap4',
                 width: '100%',
@@ -374,54 +357,45 @@ if (isset($_POST['simpan'])) {
                 allowClear: true
             });
 
-            // Enhanced search functionality - search in both ID and name
             $('#kodeBrg').on('select2:open', function() {
-                // Custom search behavior
                 setTimeout(function() {
                     $('.select2-search__field').on('keyup', function() {
                         var searchTerm = $(this).val().toLowerCase();
                         if (searchTerm.length > 0) {
-                            // Enhanced filtering logic akan ditangani oleh Select2 secara otomatis
-                            // karena kita sudah punya semua data di option
+                            
+                            
                         }
                     });
                 }, 100);
             });
         });
 
-        // Helper function to format numbers
         function numberFormat(num) {
             return parseInt(num).toLocaleString('id-ID');
         }
 
-        // Event listener untuk perubahan tanggal
         document.getElementById('tglNota').addEventListener('change', function () {
-            // Update URL tanpa reload halaman supaya tidak mengganggu proses submit
             const newUrl = '?tgl=' + this.value + '&noBeli=<?= $noBeli ?>';
             window.history.replaceState(null, '', newUrl);
         });
 
-        // Event listener untuk perhitungan qty
         document.getElementById('qty').addEventListener('input', function () {
             const qty = parseInt(this.value) || 0;
             const harga = parseInt(document.getElementById('harga').value) || 0;
             document.getElementById('jmlHarga').value = qty * harga;
         });
 
-        // Keyboard shortcut untuk fokus ke dropdown barang
         $(document).keydown(function(e) {
-            // Alt + B untuk fokus ke dropdown barang
             if (e.altKey && e.keyCode === 66) {
                 e.preventDefault();
                 $('#kodeBrg').select2('open');
             }
         });
-        // Enable/disable tombol simpan sesuai validasi supplier dan barang
+        
         function checkSimpanButton() {
             const supplier = document.getElementById('supplier').value;
             const table = document.querySelectorAll('table tbody tr');
             const simpanBtn = document.getElementById('simpan');
-            // Ada minimal 1 barang di tabel dan supplier dipilih
             if (supplier !== '' && table.length > 0) {
                 simpanBtn.disabled = false;
             } else {
@@ -430,11 +404,9 @@ if (isset($_POST['simpan'])) {
         }
 
         document.getElementById('supplier').addEventListener('change', checkSimpanButton);
-        // Cek ulang tombol simpan saat halaman dimuat dan setelah tambah/hapus barang
         window.addEventListener('DOMContentLoaded', function() {
             checkSimpanButton();
         });
-        // Juga cek ulang setiap 1 detik (jika ada perubahan tabel via ajax, dsb)
         setInterval(checkSimpanButton, 1000);
     </script>
 

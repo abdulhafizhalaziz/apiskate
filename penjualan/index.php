@@ -51,7 +51,6 @@ if ($kode) {
 }
 
 $noJual = isset($_GET['noJual']) ? $_GET['noJual'] : generateNo();
-// Tanggal nota otomatis hari ini (fallback jika query string tidak valid)
 $tglNotaVal = (isset($_GET['tgl']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['tgl'])) ? $_GET['tgl'] : date('Y-m-d');
 
 
@@ -160,7 +159,6 @@ if (isset($_POST['simpan'])) {
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <!-- Simpan id_barang pada kodeBrg agar konsisten dengan module/mode-jual.php -->
                                 <input type="hidden" name="kodeBrg" value="<?= @$_GET['barcode'] ? $selectBrg['id_barang'] : '' ?>">
                                 <input type="hidden" name="barcode" id="barcode" value="<?= @$_GET['barcode'] ?? '' ?>">
                                 <label for="namaBrg">Nama Barang</label>
@@ -290,12 +288,10 @@ if (isset($_POST['simpan'])) {
         </div>
     </section>
     <script>
-        // Update URL saat tanggal berubah tanpa reload halaman
         document.getElementById('tglNota').addEventListener('change', function () {
             const newUrl = '?tgl=' + this.value + '&noJual=<?= $noJual ?>';
             window.history.replaceState(null, '', newUrl);
         });
-        // Inisialisasi Select2 untuk dropdown barang
         $(document).ready(function() {
             $('#kodeBrg').select2({
                 theme: 'bootstrap4',
@@ -304,7 +300,6 @@ if (isset($_POST['simpan'])) {
                 allowClear: true,
                 minimumInputLength: 0,
                 matcher: function(params, data) {
-                    // custom matcher agar search bisa by barcode, id_barang, nama_barang
                     if ($.trim(params.term) === '') {
                         return data;
                     }
@@ -339,7 +334,6 @@ if (isset($_POST['simpan'])) {
                     return item.text;
                 },
                 templateSelection: function(item) {
-                    // Tampilkan hanya Barcode saat sudah terpilih
                     if (item.element) {
                         var barcode = $(item.element).data('barcode') || '';
                         return barcode;
@@ -348,26 +342,22 @@ if (isset($_POST['simpan'])) {
                 }
             });
 
-            // Autofill form saat barang dipilih
             $('#kodeBrg').on('select2:select', function (e) {
                 var data = e.params.data;
                 var $option = $(data.element);
                 if (data.id && $option.length) {
-                    // Isi field otomatis dari data attributes
                     $('input[name="kodeBrg"]').val(data.id);
                     $('input[name="barcode"]').val($option.data('barcode') || '');
                     $('input[name="namaBrg"]').val($option.data('nama') || '');
                     $('input[name="stok"]').val($option.data('stock') || '');
                     $('input[name="satuan"]').val($option.data('satuan') || '');
                     $('input[name="harga"]').val($option.data('harga') || '');
-                    // Set qty ke 1 dan fokus, hitung total
                     var qty = 1;
                     var harga = $option.data('harga') || 0;
                     $('input[name="qty"]').val(qty).focus();
                     $('input[name="jmlHarga"]').val(qty * harga);
                 }
             });
-            // Clear form saat selection dihapus
             $('#kodeBrg').on('select2:clear', function () {
                 $('input[name="kodeBrg"]').val('');
                 $('input[name="barcode"]').val('');
@@ -380,12 +370,10 @@ if (isset($_POST['simpan'])) {
             });
         });
 
-        // Helper format angka
         function numberFormat(num) {
             return parseInt(num).toLocaleString('id-ID');
         }
 
-        // Event listener qty
         document.getElementById('qty').addEventListener('input', function () {
             const qty = parseInt(this.value) || 0;
             const harga = parseInt(document.getElementById('harga').value) || 0;
@@ -396,7 +384,6 @@ if (isset($_POST['simpan'])) {
             const bayar = parseInt(document.getElementById('bayar').value) || 0;
             const total = parseInt(document.getElementById('total').value) || 0;
             const simpanBtn = document.getElementById('simpan');
-            // Tombol aktif jika bayar >= total dan bayar > 0
             if (bayar >= total && bayar > 0 && total > 0) {
                 simpanBtn.disabled = false;
             } else {
@@ -412,7 +399,6 @@ if (isset($_POST['simpan'])) {
             checkSimpanButton();
         });
 
-        // Pastikan tombol simpan diupdate saat halaman dimuat
         window.addEventListener('DOMContentLoaded', function() {
             checkSimpanButton();
         });

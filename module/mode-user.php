@@ -39,7 +39,6 @@ function insert($data){
         $gambar = 'default.png';
     }
     
-    // gambar tidak sesuai validasi
     if ($gambar == '') {
         return false;
     }
@@ -98,12 +97,10 @@ function update($data){
     $gambar     = mysqli_real_escape_string($koneksi, $_FILES['image']['name']);
     $fotoLama   = mysqli_real_escape_string($koneksi, $data['oldImg']);
 
-    // cek username sekarang
     $queryUsername = mysqli_query($koneksi, "SELECT * FROM tbl_user WHERE userid = $iduser");
     $dataUsername  = mysqli_fetch_assoc($queryUsername);
     $curUsername   = $dataUsername['username'];
 
-    // cek username baru
     $newUsername   = mysqli_query($koneksi, "SELECT username FROM tbl_user WHERE username = '$username'");
 
     if ($username !== $curUsername) {
@@ -116,7 +113,6 @@ function update($data){
         }
     }
 
-    // cek gambar
     if ($gambar != null) {
         $url        = 'data-user.php';
         $imgUser    = uploadimg($url);
