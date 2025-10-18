@@ -78,7 +78,7 @@ function userMenu() {
     return $menu;
 }
 
-function menuHome() {
+function menuBeranda() {
     if (userMenu() == 'dashboard.php') {
         $result = 'active';
     } else {

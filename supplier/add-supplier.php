@@ -43,7 +43,7 @@ if (isset($_POST['simpan'])) {
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
+              <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
               <li class="breadcrumb-item"><a href="<?= $main_url ?>supplier/data-Supplier.php">Supplier</a></li>
               <li class="breadcrumb-item active">Add Supplier</li>
             </ol>
