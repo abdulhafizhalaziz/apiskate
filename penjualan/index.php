@@ -331,18 +331,18 @@ if (isset($_POST['simpan'])) {
                         var barcode = $(item.element).data('barcode') || '';
                         var idbarang = item.id || '';
                         var nama = $(item.element).data('nama') || '';
+                        var stok = $(item.element).data('stock') || 0;
                         $container.find('.select2-result-repository__title').html('<b>' + idbarang + '</b> | ' + barcode + ' | ' + nama);
-                        $container.find('.select2-result-repository__description').text('Harga Jual: Rp ' + numberFormat($(item.element).data('harga')));
+                        $container.find('.select2-result-repository__description').text('Harga Jual: Rp ' + numberFormat($(item.element).data('harga')) + ' | Stok: ' + stok);
                         return $container;
                     }
                     return item.text;
                 },
                 templateSelection: function(item) {
+                    // Tampilkan hanya Barcode saat sudah terpilih
                     if (item.element) {
                         var barcode = $(item.element).data('barcode') || '';
-                        var idbarang = item.id || '';
-                        var nama = $(item.element).data('nama') || '';
-                        return idbarang + ' | ' + barcode + ' | ' + nama;
+                        return barcode;
                     }
                     return item.text || item.id;
                 }

@@ -315,13 +315,21 @@ if (isset($_POST['simpan'])) {
                             "<div class='select2-result-repository__description'></div>" +
                             "</div>"
                         );
-                        $container.find('.select2-result-repository__title').text(item.text);
-                        $container.find('.select2-result-repository__description').text('Harga Beli: Rp ' + numberFormat($(item.element).data('harga')));
+                        var idbarang = item.id || '';
+                        var nama = $(item.element).data('nama') || '';
+                        var harga = $(item.element).data('harga') || 0;
+                        var stok = $(item.element).data('stock') || 0;
+                        $container.find('.select2-result-repository__title').html('<b>' + idbarang + '</b> | ' + nama);
+                        $container.find('.select2-result-repository__description').text('Harga Beli: Rp ' + numberFormat(harga) + ' | Stok: ' + stok);
                         return $container;
                     }
                     return item.text;
                 },
                 templateSelection: function(item) {
+                    // Tampilkan hanya ID Barang saat sudah terpilih
+                    if (item.element) {
+                        return item.id || '';
+                    }
                     return item.text || item.id;
                 }
             });
