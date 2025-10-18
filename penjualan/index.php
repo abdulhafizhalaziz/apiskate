@@ -182,9 +182,11 @@ if (isset($_POST['simpan'])) {
                         </div>
                         <div class="col-lg-2">
                             <div class="form-group">
-                                <label for="harga">Harga</label>
-                                <input type="number" name="harga" class="form-control form-control-sm" id="harga"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>" readonly>
+                                <label for="hargaDisplay">Harga</label>
+                                <input type="text" class="form-control form-control-sm" id="hargaDisplay"
+                                    value="<?= @$_GET['barcode'] ? number_format($selectBrg['harga_jual'], 0, ',', '.') : '' ?>" readonly>
+                                <input type="hidden" name="harga" id="harga"
+                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>">
                             </div>
                         </div>
                         <div class="col-lg-2">
@@ -196,9 +198,11 @@ if (isset($_POST['simpan'])) {
                         </div>
                         <div class="col-lg-2">
                             <div class="form-group">
-                                <label for="jmlHarga">Jumlah Harga</label>
-                                <input type="number" name="jmlHarga" class="form-control form-control-sm" id="jmlHarga"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>" readonly>
+                                <label for="jmlHargaDisplay">Jumlah Harga</label>
+                                <input type="text" class="form-control form-control-sm" id="jmlHargaDisplay"
+                                    value="<?= @$_GET['barcode'] ? number_format($selectBrg['harga_jual'], 0, ',', '.') : '' ?>" readonly>
+                                <input type="hidden" name="jmlHarga" id="jmlHarga"
+                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>">
                             </div>
                         </div>
                     </div>
@@ -266,17 +270,17 @@ if (isset($_POST['simpan'])) {
                     </div>
                     <div class="col-lg-4 py-2 px-3">
                         <div class="form-group row mb-2">
-                            <label for="" class="col-sm-3 col-form-label">Bayar</label>
+                            <label for="bayarDisplay" class="col-sm-3 col-form-label">Bayar</label>
                             <div class="col-sm-9">
-                                <input type="number" name="bayar" class="form-control form-control-sm text-right"
-                                    id="bayar" placeholder="Masukkan jumlah bayar">
+                                <input type="text" class="form-control form-control-sm text-right" id="bayarDisplay" placeholder="Masukkan jumlah bayar">
+                                <input type="hidden" name="bayar" id="bayar" value="">
                             </div>
                         </div>
                         <div class="form-group row mb-2">
-                            <label for="kembalian" class="col-sm-3 col-form-label">Kembalian</label>
+                            <label for="kembalianDisplay" class="col-sm-3 col-form-label">Kembalian</label>
                             <div class="col-sm-9">
-                                <input type="number" name="kembalian" class="form-control form-control-sm text-right"
-                                    id="kembalian" readonly>
+                                <input type="text" class="form-control form-control-sm text-right" id="kembalianDisplay" readonly>
+                                <input type="hidden" name="kembalian" id="kembalian" value="">
                             </div>
                         </div>
                     </div>
@@ -352,10 +356,12 @@ if (isset($_POST['simpan'])) {
                     $('input[name="stok"]').val($option.data('stock') || '');
                     $('input[name="satuan"]').val($option.data('satuan') || '');
                     $('input[name="harga"]').val($option.data('harga') || '');
+                    $('#hargaDisplay').val(numberFormat($option.data('harga') || 0));
                     var qty = 1;
                     var harga = $option.data('harga') || 0;
                     $('input[name="qty"]').val(qty).focus();
                     $('input[name="jmlHarga"]').val(qty * harga);
+                    $('#jmlHargaDisplay').val(numberFormat(qty * harga));
                 }
             });
             $('#kodeBrg').on('select2:clear', function () {
@@ -367,6 +373,8 @@ if (isset($_POST['simpan'])) {
                 $('input[name="harga"]').val('');
                 $('input[name="qty"]').val('');
                 $('input[name="jmlHarga"]').val('');
+                $('#hargaDisplay').val('');
+                $('#jmlHargaDisplay').val('');
             });
         });
 
@@ -377,7 +385,9 @@ if (isset($_POST['simpan'])) {
         document.getElementById('qty').addEventListener('input', function () {
             const qty = parseInt(this.value) || 0;
             const harga = parseInt(document.getElementById('harga').value) || 0;
-            document.getElementById('jmlHarga').value = qty * harga;
+            const total = qty * harga;
+            document.getElementById('jmlHarga').value = total;
+            document.getElementById('jmlHargaDisplay').value = numberFormat(total);
         });
 
         function checkSimpanButton() {
@@ -391,12 +401,35 @@ if (isset($_POST['simpan'])) {
             }
         }
 
-        document.getElementById('bayar').addEventListener('input', function () {
-            const bayar = parseInt(this.value) || 0;
+        document.getElementById('bayarDisplay').addEventListener('input', function () {
+            // Ambil hanya digit dari input display
+            const rawStr = this.value.replace(/\D/g, '');
+            const bayar = rawStr === '' ? 0 : parseInt(rawStr, 10);
+            // Set ke input hidden numerik
+            document.getElementById('bayar').value = bayar;
+            // Format tampilan kembali dengan titik ribuan
+            this.value = bayar ? numberFormat(bayar) : '';
+
             const total = parseInt(document.getElementById('total').value) || 0;
             const kembalian = bayar - total;
-            document.getElementById('kembalian').value = kembalian >= 0 ? kembalian : 0;
+            const kembalianSafe = kembalian >= 0 ? kembalian : 0;
+            // Set hidden dan display kembalian
+            document.getElementById('kembalian').value = kembalianSafe;
+            document.getElementById('kembalianDisplay').value = kembalianSafe ? numberFormat(kembalianSafe) : '';
+
             checkSimpanButton();
+        });
+
+        // Inisialisasi tampilan saat load (jika ada nilai sebelumnya)
+        window.addEventListener('DOMContentLoaded', function() {
+            const bayarHidden = parseInt(document.getElementById('bayar').value) || 0;
+            if (bayarHidden > 0) {
+                document.getElementById('bayarDisplay').value = numberFormat(bayarHidden);
+            }
+            const kembalianHidden = parseInt(document.getElementById('kembalian').value) || 0;
+            if (kembalianHidden > 0) {
+                document.getElementById('kembalianDisplay').value = numberFormat(kembalianHidden);
+            }
         });
 
         window.addEventListener('DOMContentLoaded', function() {
