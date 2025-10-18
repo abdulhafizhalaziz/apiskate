@@ -112,6 +112,13 @@ function delete($id_barang, $idJual, $qty){
     if ($ok) {
         // Kembalikan stok saat detail penjualan dihapus
         mysqli_query($koneksi, "UPDATE tbl_barang SET stock = stock + $qty WHERE id_barang = '$id_barang' OR barcode = '$id_barang'");
+        // Hapus header jika sudah tidak ada detail lagi
+        $resCnt = mysqli_query($koneksi, "SELECT COUNT(*) AS jml FROM tbl_transaksi_detail WHERE no_transaksi = '$idJual'");
+        $rowCnt = $resCnt ? mysqli_fetch_assoc($resCnt) : ['jml' => 0];
+        $jml = (int)($rowCnt['jml'] ?? 0);
+        if ($jml === 0) {
+            mysqli_query($koneksi, "DELETE FROM tbl_transaksi WHERE no_transaksi = '$idJual' AND tipe_transaksi = 'JUAL'");
+        }
     }
     return mysqli_affected_rows($koneksi);
 }
@@ -136,6 +143,15 @@ function simpan($data){
     $keterangan = mysqli_real_escape_string($koneksi, $data['ketr'] ?? '');
     $bayar      = (float) ($data['bayar'] ?? 0);
     $kembalian  = (float) ($data['kembalian'] ?? 0);
+
+    // Validasi: harus punya minimal 1 detail; jika tidak, pastikan header (jika ada) dihapus dan batalkan simpan
+    $resCntDet = mysqli_query($koneksi, "SELECT COUNT(*) AS jml FROM tbl_transaksi_detail WHERE no_transaksi = '$noJual'");
+    $rowCntDet = $resCntDet ? mysqli_fetch_assoc($resCntDet) : ['jml' => 0];
+    if ((int)($rowCntDet['jml'] ?? 0) === 0) {
+        // Tidak ada detail, bersihkan header yatim jika ada
+        mysqli_query($koneksi, "DELETE FROM tbl_transaksi WHERE no_transaksi = '$noJual' AND tipe_transaksi = 'JUAL'");
+        return false;
+    }
 
     $sqlJual    = "INSERT INTO tbl_transaksi (no_transaksi, tgl_transaksi, tipe_transaksi, id_relasi, total, bayar, kembalian, keterangan)
                    VALUES ('$noJual',STR_TO_DATE('$tgl','%Y-%m-%d'),'JUAL',$customer,$total,$bayar,$kembalian,'$keterangan')

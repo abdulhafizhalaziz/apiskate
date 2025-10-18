@@ -112,6 +112,13 @@ function delete($idbrg, $idbeli, $qty){
     if ($okDel) {
         // Kurangi stok kembali saat detail pembelian dihapus
         mysqli_query($koneksi, "UPDATE tbl_barang SET stock = GREATEST(stock - $qty, 0) WHERE id_barang = '$idbrg'");
+        // Jika tidak ada detail tersisa, hapus header pembelian
+        $resCnt = mysqli_query($koneksi, "SELECT COUNT(*) AS jml FROM tbl_transaksi_detail WHERE no_transaksi = '$idbeli'");
+        $rowCnt = $resCnt ? mysqli_fetch_assoc($resCnt) : ['jml' => 0];
+        $jml = (int)($rowCnt['jml'] ?? 0);
+        if ($jml === 0) {
+            mysqli_query($koneksi, "DELETE FROM tbl_transaksi WHERE no_transaksi = '$idbeli' AND tipe_transaksi = 'BELI'");
+        }
     }
 
     return mysqli_affected_rows($koneksi);
@@ -141,6 +148,16 @@ function simpan($data){
     $cekSupp = mysqli_query($koneksi, "SELECT 1 FROM tbl_relasi WHERE id_relasi = $supplier AND tipe = 'SUPPLIER' LIMIT 1");
     if (!$cekSupp || mysqli_num_rows($cekSupp) === 0) {
         $_SESSION['last_error'] = 'Supplier tidak ditemukan atau bukan tipe SUPPLIER';
+        return false;
+    }
+
+    // Validasi: harus ada minimal 1 detail untuk no_transaksi ini
+    $resCntDet = mysqli_query($koneksi, "SELECT COUNT(*) AS jml FROM tbl_transaksi_detail WHERE no_transaksi = '$noBeli'");
+    $rowCntDet = $resCntDet ? mysqli_fetch_assoc($resCntDet) : ['jml' => 0];
+    if ((int)($rowCntDet['jml'] ?? 0) === 0) {
+        // Tidak ada detail, pastikan header yatim dibersihkan dan batalkan simpan
+        mysqli_query($koneksi, "DELETE FROM tbl_transaksi WHERE no_transaksi = '$noBeli' AND tipe_transaksi = 'BELI'");
+        $_SESSION['last_error'] = 'Tidak ada detail barang pada transaksi ini.';
         return false;
     }
 
