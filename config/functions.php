@@ -193,10 +193,24 @@ function in_date($tgl) {
 
 function omzet() {
     global $koneksi;
-    $query = mysqli_query($koneksi, "SELECT SUM(total) AS omzet FROM tbl_jual_head");
+    // Sesuaikan dengan skema baru: jumlahkan total untuk transaksi JUAL di tabel tbl_transaksi
+    $query = mysqli_query($koneksi, "SELECT SUM(total) AS omzet FROM tbl_transaksi WHERE tipe_transaksi = 'JUAL'");
     $data = mysqli_fetch_assoc($query);
-    $omzet = number_format($data['omzet'], 0, ',', '.');
+    // Pastikan mengatasi NULL ketika belum ada transaksi
+    $total = isset($data['omzet']) && $data['omzet'] !== null ? $data['omzet'] : 0;
+    $omzet = number_format($total, 0, ',', '.');
     return $omzet;
+}
+
+// Helper: ambil nama relasi (Supplier/Customer) dari id_relasi sesuai skema baru
+function relasiName(int $id_relasi): string {
+    global $koneksi;
+    $id = (int)$id_relasi;
+    if ($id <= 0) return '-';
+    $res = mysqli_query($koneksi, "SELECT nama FROM tbl_relasi WHERE id_relasi = $id LIMIT 1");
+    if (!$res) return '-';
+    $row = mysqli_fetch_assoc($res);
+    return $row['nama'] ?? '-';
 }
 
 ?>

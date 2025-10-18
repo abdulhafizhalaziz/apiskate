@@ -50,18 +50,21 @@ if ($kode) {
     }
 }
 
-$noJual = generateNo();
+$noJual = isset($_GET['noJual']) ? $_GET['noJual'] : generateNo();
+// Tanggal nota otomatis hari ini (fallback jika query string tidak valid)
+$tglNotaVal = (isset($_GET['tgl']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['tgl'])) ? $_GET['tgl'] : date('Y-m-d');
 
 
 if (isset($_POST['addbrg'])) {
-    $tgl = $_POST['tglNota'];
+    $tgl = !empty($_POST['tglNota']) ? $_POST['tglNota'] : date('Y-m-d');
+    $noJual = $_POST['noJual'];
     $barcode = trim($_POST['barcode']);
     $qty = trim($_POST['qty']);
     if ($barcode == '' || $qty == '' || $qty <= 0) {
         echo "<script>alert('Barcode dan Qty harus diisi dengan benar!');</script>";
     } else {
         if (insert($_POST)) {
-            echo "<script>document.location = '?tgl=$tgl';</script>";
+            echo "<script>document.location = '?tgl=$tgl&noJual=$noJual';</script>";
         }
     }
 }
@@ -112,12 +115,12 @@ if (isset($_POST['simpan'])) {
                                 <label for="noNota" class="col-sm-2 col-form-label">No Nota</label>
                                 <div class="col-sm-4">
                                     <input type="text" name="noJual" class="form-control" id="noNota"
-                                        value="<?= $noJual ?>">
+                                        value="<?= $noJual ?>" readonly>
                                 </div>
                                 <label for="tglNota" class="col-sm-2 col-form-label">Tgl Nota</label>
                                 <div class="col-sm-4">
                                     <input type="date" name="tglNota" class="form-control" id="tglNota"
-                                        value="<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" required>
+                                        value="<?= $tglNotaVal ?>" required>
                                 </div>
                             </div>
                             <div class="form-group row mb-2">
@@ -157,7 +160,8 @@ if (isset($_POST['simpan'])) {
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <input type="hidden" name="kodeBrg" value="<?= @$_GET['barcode'] ? $selectBrg['nama_barang'] : '' ?>">
+                                <!-- Simpan id_barang pada kodeBrg agar konsisten dengan module/mode-jual.php -->
+                                <input type="hidden" name="kodeBrg" value="<?= @$_GET['barcode'] ? $selectBrg['id_barang'] : '' ?>">
                                 <input type="hidden" name="barcode" id="barcode" value="<?= @$_GET['barcode'] ?? '' ?>">
                                 <label for="namaBrg">Nama Barang</label>
                                 <input type="text" name="namaBrg" class="form-control form-control-sm" id="namaBrg"
@@ -223,13 +227,13 @@ if (isset($_POST['simpan'])) {
                             foreach ($brgDetail as $detail) { ?>
                                 <tr>
                                     <td><?= $no++ ?></td>
-                                    <td><?= $detail['id_barang'] ?></td>
+                                    <td><?= $detail['kode_barang'] ?></td>
                                     <td><?= $detail['nama_brg'] ?></td>
                                     <td class="text-right"><?= number_format($detail['harga'], 0, ',', '.') ?></td>
                                     <td class="text-right"><?= $detail['qty'] ?></td>
                                     <td class="text-right"><?= number_format($detail['jml_harga'], 0, ',', '.') ?></td>
                                     <td class="text-center">
-                                        <a href="?barcode=<?= $detail['id_barang'] ?>&idJual=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $tgl ?? '' ?>&msg=deleted"
+                                        <a href="?barcode=<?= $detail['kode_barang'] ?>&idJual=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $tglNotaVal ?>&noJual=<?= $detail['no_transaksi'] ?>&msg=deleted"
                                             class="btn btn-sm btn-danger"
                                             onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i
                                                 class="fas fa-trash"></i></a>
@@ -246,9 +250,9 @@ if (isset($_POST['simpan'])) {
                             <div class="col-sm-9">
                                 <select name="customer" id="customer" class="form-control form-control-sm">
                                     <?php
-                                    $customers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'CUSTOMER'");
+                                    $customers = getData("SELECT id_relasi, nama FROM tbl_relasi WHERE tipe = 'CUSTOMER' ORDER BY nama ASC");
                                     foreach ($customers as $customer) { ?>
-                                        <option value="<?= $customer['nama'] ?>"><?= $customer['nama'] ?></option>
+                                        <option value="<?= (int)$customer['id_relasi'] ?>"><?= htmlspecialchars($customer['nama']) ?></option>
                                         <?php
                                     }
                                     ?>
@@ -279,13 +283,18 @@ if (isset($_POST['simpan'])) {
                         </div>
                     </div>
                     <div class="col lg-4 p-2">
-            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block" disabled><i
+            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn-sm btn-block" disabled><i
                 class="fa fa-save"></i> Simpan</button>
                     </div>
             </form>
         </div>
     </section>
     <script>
+        // Update URL saat tanggal berubah tanpa reload halaman
+        document.getElementById('tglNota').addEventListener('change', function () {
+            const newUrl = '?tgl=' + this.value + '&noJual=<?= $noJual ?>';
+            window.history.replaceState(null, '', newUrl);
+        });
         // Inisialisasi Select2 untuk dropdown barang
         $(document).ready(function() {
             $('#kodeBrg').select2({

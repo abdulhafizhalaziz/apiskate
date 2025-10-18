@@ -16,7 +16,7 @@ require "../template/header.php";
 require "../template/navbar.php";
 require "../template/sidebar.php";
 
-$pembelian = getData("SELECT * FROM tbl_beli_head");
+$pembelian = getData("SELECT t.*, r.nama AS relasi_nama FROM tbl_transaksi t JOIN tbl_relasi r ON r.id_relasi = t.id_relasi WHERE t.tipe_transaksi = 'BELI'");
 
 ?>
 <div class="content-wrapper">
@@ -66,12 +66,12 @@ $pembelian = getData("SELECT * FROM tbl_beli_head");
                                     <td>
                                         <?= $no++ ?>
                                     </td>
-                                    <td><?= $beli['no_beli'] ?></td>
-                                    <td><?= in_date($beli['tgl_beli']) ?></td>
-                                    <td class="text-center"><?= $beli['supplier'] ?></td>
+                                    <td><?= $beli['no_transaksi'] ?></td>
+                                    <td><?= in_date($beli['tgl_transaksi']) ?></td>
+                                    <td class="text-center"><?= $beli['relasi_nama'] ?></td>
                                     <td class="text-center"><?= number_format($beli['total'], 0, ',', '.') ?></td>
                                     <td class="text-center">
-                                        <a href="detail-pembelian.php?id=<?=$beli['no_beli']?>&tgl=<?=in_date($beli['tgl_beli'])?>" class="btn btn-sm btn-info" title="Rincian Barang">Detail</a>
+                                        <a href="detail-pembelian.php?id=<?=$beli['no_transaksi']?>&tgl=<?=in_date($beli['tgl_transaksi'])?>" class="btn btn-sm btn-info" title="Rincian Barang">Detail</a>
                                     </td>
                                 </tr>
                                 <?php

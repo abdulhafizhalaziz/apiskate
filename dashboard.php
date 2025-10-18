@@ -18,10 +18,10 @@ require "template/sidebar.php";
 $users = getData("SELECT COUNT(*) as total FROM tbl_user");
 $user_count = $users[0]['total'];
 
-$suppliers = getData("SELECT COUNT(*) as total FROM tbl_supplier");
+$suppliers = getData("SELECT COUNT(*) as total FROM tbl_relasi WHERE tipe = 'SUPPLIER'");
 $supplier_count = $suppliers[0]['total'];
 
-$customers = getData("SELECT COUNT(*) as total FROM tbl_customer");
+$customers = getData("SELECT COUNT(*) as total FROM tbl_relasi WHERE tipe = 'CUSTOMER'");
 $customer_count = $customers[0]['total'];
 
 $barang = getData("SELECT COUNT(*) as total FROM tbl_barang");

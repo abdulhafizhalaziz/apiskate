@@ -98,7 +98,7 @@ if ($msg == 'updated') {
                     <tbody>
                         <?php
                         $no = 1;
-                        $suppliers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'SUPPLIER'");
+                        $suppliers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'SUPPLIER' ORDER BY nama ASC");
                         foreach ($suppliers as $supplier) :
                         ?>
                             <tr>

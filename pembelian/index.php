@@ -24,7 +24,7 @@ if ($msg == 'deleted') {
     $tgl = $_GET['tgl'];
     
     if (delete($idbrg, $idbeli, $qty)) {
-        echo "<script>document.location = '?tgl=$tgl';</script>";
+        echo "<script>document.location = '?tgl=$tgl&noBeli=$idbeli';</script>";
     } else {
         echo "<script>alert('Gagal menghapus barang. Silakan coba lagi.');</script>";
     }
@@ -39,8 +39,11 @@ if ($kode) {
 
 $noBeli = isset($_GET['noBeli']) ? $_GET['noBeli'] : generateNo();
 
+// Tanggal nota otomatis hari ini (fallback jika query string tidak valid)
+$tglNotaVal = (isset($_GET['tgl']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['tgl'])) ? $_GET['tgl'] : date('Y-m-d');
+
 if (isset($_POST['addbrg'])) {
-    $tgl = $_POST['tglNota'];
+    $tgl = !empty($_POST['tglNota']) ? $_POST['tglNota'] : date('Y-m-d');
     $noBeli = $_POST['noBeli'];
     $kodeBrg = trim($_POST['kodeBrg']);
     $qty = trim($_POST['qty']);
@@ -48,7 +51,7 @@ if (isset($_POST['addbrg'])) {
         echo "<script>alert('Barang dan Qty harus diisi dengan benar!');</script>";
     } else {
         if (insert($_POST)) {
-            echo "<script>document.location = '?tgl=$tgl';</script>";
+            echo "<script>document.location = '?tgl=$tgl&noBeli=$noBeli';</script>";
         }
     }
 }
@@ -61,7 +64,9 @@ if (isset($_POST['simpan'])) {
         echo "<script>alert('Supplier harus dipilih dan minimal 1 barang ditambahkan!');</script>";
     } else {
         if (simpan($_POST)) {
-            echo "<script>\n        alert('Data pembelian berhasil disimpan.');\n        document.location = 'index.php?msg=sukses';\n        </script>";
+            echo "<script>\n                alert('Data pembelian berhasil disimpan.');\n                document.location = 'index.php?msg=sukses';\n            </script>";
+        } else {
+            echo "<script>\n                alert('Gagal menyimpan pembelian. Pastikan supplier valid dan minimal 1 barang ditambahkan.');\n            </script>";
         }
     }
 }
@@ -88,17 +93,22 @@ if (isset($_POST['simpan'])) {
     <section>
         <div class="container-fluid">
             <form action="" method="post">
+                <?php if (!empty($_SESSION['last_error'])): ?>
+                <div class="alert alert-danger">
+                    <?= htmlspecialchars($_SESSION['last_error']); unset($_SESSION['last_error']); ?>
+                </div>
+                <?php endif; ?>
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="card card-outline card-warning p-3">
                             <div class="form-group row mb-2">
                                 <label for="noNota" class="col-sm-2 col-form-label">No Nota</label>
                                 <div class="col-sm-4">
-                                    <input type="text" name="noBeli" class="form-control" id="noNota" value="<?= $noBeli ?>">
+                                    <input type="text" name="noBeli" class="form-control" id="noNota" value="<?= $noBeli ?>" readonly>
                                 </div>
                                 <label for="tglNota" class="col-sm-2 col-form-label">Tgl Nota</label>
                                 <div class="col-sm-4">
-                                    <input type="date" name="tglNota" class="form-control" id="tglNota" value="<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" required>
+                                    <input type="date" name="tglNota" class="form-control" id="tglNota" value="<?= $tglNotaVal ?>" required>
                                 </div>
                             </div>
                             <div class="form-group row mb-2">
@@ -173,7 +183,7 @@ if (isset($_POST['simpan'])) {
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-info btn-block" name="addbrg"><i class="fas fa-cart-plus fa-sm"></i> Tambah Barang</button>
+                    <button type="submit" class="btn btn-sm btn-info btn-block" id="addbrgBtn" name="addbrg"><i class="fas fa-cart-plus fa-sm"></i> Tambah Barang</button>
                 </div>
                 <div class="card card-outline card-success table-responsive px-2">
                     <table class="table table-sm table-hover text-nowrap">
@@ -201,7 +211,7 @@ if (isset($_POST['simpan'])) {
                                     <td class="text-right"><?= $detail['qty'] ?></td>
                                     <td class="text-right"><?= number_format($detail['jml_harga'], 0, ',', '.') ?></td>
                                     <td class="text-center">
-                                        <a href="?idbrg=<?= $detail['kode_barang'] ?>&idbeli=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $detail['tgl_transaksi'] ?>&msg=deleted" class="btn btn-sm btn-danger" onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i class="fas fa-trash"></i></a>
+                                        <a href="?idbrg=<?= $detail['kode_barang'] ?>&idbeli=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $_GET['tgl'] ?? '' ?>&msg=deleted" class="btn btn-sm btn-danger" onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>
                             <?php } ?>
@@ -217,9 +227,9 @@ if (isset($_POST['simpan'])) {
                                 <select name="supplier" id="supplier" class="form-control form-control-sm select2" data-placeholder="-- Pilih Supplier --">
                                     <option value="">-- Pilih Supplier --</option>
                                     <?php
-                                        $suppliers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'SUPPLIER'");
+                                        $suppliers = getData("SELECT id_relasi, nama FROM tbl_relasi WHERE tipe = 'SUPPLIER' ORDER BY nama ASC");
                                         foreach($suppliers as $supplier){  ?>
-                                            <option value="<?= $supplier['nama'] ?>"><?= $supplier['nama'] ?></option>
+                                            <option value="<?= (int)$supplier['id_relasi'] ?>"><?= htmlspecialchars($supplier['nama']) ?></option>
                                             <?php
                                         }
                                         ?>
@@ -234,7 +244,7 @@ if (isset($_POST['simpan'])) {
                         </div>
                         </div>
                         <div class="col lg-6 p-2">
-                            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block" disabled><i class="fa fa-save"></i> Simpan</button>
+                            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn-sm btn-block" disabled><i class="fa fa-save"></i> Simpan</button>
                         </div>
                     </div>
                 </div>
@@ -378,7 +388,9 @@ if (isset($_POST['simpan'])) {
 
         // Event listener untuk perubahan tanggal
         document.getElementById('tglNota').addEventListener('change', function () {
-            document.location.href = '?tgl=' + this.value;
+            // Update URL tanpa reload halaman supaya tidak mengganggu proses submit
+            const newUrl = '?tgl=' + this.value + '&noBeli=<?= $noBeli ?>';
+            window.history.replaceState(null, '', newUrl);
         });
 
         // Event listener untuk perhitungan qty

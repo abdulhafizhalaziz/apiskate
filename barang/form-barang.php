@@ -100,24 +100,7 @@ if (isset($_POST['simpan'])) {
                         <div class="form-group">
                             <label for="satuan">Satuan *</label>
                             <select name="satuan" id="satuan" class="form-control" required>
-                                <?php 
-                                if ($msg != "") {
-                                    $satuan = ["gram"];
-                                    foreach ($satuan as $sat) {
-                                        if ($barang['satuan'] == $sat) { ?>
-                                            <option value="<?= $sat ?>" selected><?= $sat ?></option>
-                                        <?php } else { ?>
-                                            <option value="<?= $sat ?>"><?= $sat ?></option>
-                                        <?php
-                                        }
-                                    }
-                                } else { ?>
-                                    <option value="">-- Satuan Barang --</option>
-                                    <option value="gram">100 Gram</option>
-                                <?php
-                                }
-                                ?>
-                                
+                                <option value="gram" selected>100 Gram</option>
                             </select>
                         </div>
                         <div class="form-group">

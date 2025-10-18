@@ -18,7 +18,7 @@ require "../template/sidebar.php";
 
 $id = $_GET['id'];
 $tgl = $_GET['tgl'];
-$pembelian = getData("SELECT * FROM tbl_beli_detail WHERE no_beli = '$id'" );
+$pembelian = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$id'" );
 ?>
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -69,9 +69,9 @@ $pembelian = getData("SELECT * FROM tbl_beli_detail WHERE no_beli = '$id'" );
                                     <td>
                                         <?= $no++ ?>
                                     </td>
-                                    <td><?= $beli['kode_brg'] ?></td>
+                                    <td><?= $beli['kode_barang'] ?></td>
                                     <td><?= $beli['nama_brg'] ?></td>
-                                    <td class="text-center"><?= number_format($beli['harga_beli'], 0, ',', '.') ?></td>
+                                    <td class="text-center"><?= number_format($beli['harga'], 0, ',', '.') ?></td>
                                     <td class="text-center"><?= $beli['qty'] ?></td>
                                     <td class="text-center"><?= number_format($beli['jml_harga'], 0, ',', '.') ?></td>
                                 </tr>
