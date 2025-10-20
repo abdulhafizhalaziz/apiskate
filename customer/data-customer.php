@@ -60,7 +60,7 @@ if ($msg == 'updated') {
         </div><!-- /.col -->
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
+            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
             <li class="breadcrumb-item active">Data Customer</li>
             </ol>
         </div><!-- /.col -->
@@ -98,7 +98,7 @@ if ($msg == 'updated') {
                     <tbody>
                         <?php
                         $no = 1;
-                        $customers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'CUSTOMER'");
+                        $customers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'CUSTOMER' ORDER BY nama ASC");
                         foreach ($customers as $customer) :
                         ?>
                             <tr>

@@ -12,8 +12,7 @@ function insert($data){
     $telpon  = mysqli_real_escape_string($koneksi, $data['telpon']);
     $alamat  = mysqli_real_escape_string($koneksi, $data['alamat']);
     $ketr    = mysqli_real_escape_string($koneksi, $data['ketr']);
-    $tipe    = isset($data['tipe']) ? mysqli_real_escape_string($koneksi, $data['tipe']) : 'SUPPLIER';
-
+    $tipe    = 'SUPPLIER';
     $sqlRelasi = "INSERT INTO tbl_relasi (nama, telpon, alamat, deskripsi, tipe) VALUES ('$nama', '$telpon', '$alamat', '$ketr', '$tipe')";
     mysqli_query($koneksi, $sqlRelasi);
 
@@ -23,7 +22,7 @@ function insert($data){
 function delete($id){
     global $koneksi;
 
-    $sqlDelete = "DELETE FROM tbl_supplier WHERE id_supplier = $id";
+    $sqlDelete = "DELETE FROM tbl_relasi WHERE id_relasi = $id AND tipe = 'SUPPLIER'";
     mysqli_query($koneksi, $sqlDelete);
     
     return mysqli_affected_rows($koneksi);
@@ -38,12 +37,12 @@ function update($data) {
     $alamat  = mysqli_real_escape_string($koneksi, $data['alamat']);
     $ketr    = mysqli_real_escape_string($koneksi, $data['ketr']);
 
-    $sqlSupplier    = "UPDATE tbl_supplier SET
+    $sqlSupplier    = "UPDATE tbl_relasi SET
                         nama    = '$nama',
                         telpon  = '$telpon',
                         deskripsi = '$ketr',
                         alamat  = '$alamat'
-                        WHERE id_supplier = $id    
+                        WHERE id_relasi = $id AND tipe = 'SUPPLIER' 
                         ";
     mysqli_query($koneksi, $sqlSupplier);
     

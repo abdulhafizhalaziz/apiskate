@@ -27,9 +27,9 @@
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
             <li class="nav-item">
               <a href="<?= $main_url ?>dashboard.php"
-              class="nav-link <?= menuHome() ?> ">
+              class="nav-link <?= menuBeranda() ?> ">
               <i class="nav-icon fa-solid fa-gauge-high text-sm"></i>
-              <p>Dashboard</p>
+              <p>Dasbor</p>
             </a>
             </li>
             <?php

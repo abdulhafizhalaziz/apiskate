@@ -53,7 +53,32 @@
       }
     });
 
-    $('#tblData').DataTable();
+    $('#tblData').DataTable({
+      language: {
+        decimal: ',',
+        thousands: '.',
+        processing: 'Sedang memproses...',
+        lengthMenu: 'Tampilkan _MENU_ entri',
+        zeroRecords: 'Tidak ditemukan data yang sesuai',
+        info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ entri',
+        infoEmpty: 'Menampilkan 0 sampai 0 dari 0 entri',
+        infoFiltered: '(disaring dari total _MAX_ entri)',
+        infoPostFix: '',
+        search: 'Cari:',
+        emptyTable: 'Tidak ada data pada tabel',
+        loadingRecords: 'Memuat...',
+        paginate: {
+          first: 'Pertama',
+          previous: 'Sebelumnya',
+          next: 'Berikutnya',
+          last: 'Terakhir'
+        },
+        aria: {
+          sortAscending: ': aktifkan untuk mengurutkan kolom menaik',
+          sortDescending: ': aktifkan untuk mengurutkan kolom menurun'
+        }
+      }
+    });
   });
 </script>
 
