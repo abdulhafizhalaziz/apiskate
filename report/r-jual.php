@@ -44,7 +44,7 @@ $dataJual = getData("SELECT * FROM tbl_jual_head WHERE tgl_jual BETWEEN '$tgl1' 
                 <th>No</th>
                 <th style="120px">Tgl Penjualan</th>
                 <th style="120px">ID Penjualan</th>
-                <th style="300px">Suplier</th>
+                <th style="300px">Customer</th>
                 <th>Total Penjualan</th>
             </tr>
             <tr>

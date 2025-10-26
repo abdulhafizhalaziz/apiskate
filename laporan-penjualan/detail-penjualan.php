@@ -56,7 +56,7 @@ $penjualan = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$id'" );
                                 <th>No</th>
                                 <th>Barcode</th>
                                 <th>Nama Barang</th>
-                                <th>Harga Beli</th>
+                                <th>Harga Jual</th>
                                 <th class="text-center">Qty</th>
                                 <th class="text-center">Jumlah Harga</th>
                             </tr>
