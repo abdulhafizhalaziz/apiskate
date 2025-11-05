@@ -16,7 +16,7 @@ require "../template/header.php";
 require "../template/navbar.php";
 require "../template/sidebar.php";
 
-$pembelian = getData("SELECT * FROM tbl_beli_head");
+$pembelian = getData("SELECT * FROM tbl_transaksi_beli");
 
 ?>
 <div class="content-wrapper">

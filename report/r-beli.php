@@ -11,7 +11,7 @@ require "../config/functions.php";
 
 $tgl1 = $_GET['tgl1'];
 $tgl2 = $_GET['tgl2'];
-$dataBeli = getData("SELECT * FROM tbl_beli_head WHERE tgl_beli BETWEEN '$tgl1' AND '$tgl2'");
+$dataBeli = getData("SELECT * FROM tbl_transaksi_beli WHERE tgl_beli BETWEEN '$tgl1' AND '$tgl2'");
 ?>
 
 <!DOCTYPE html>

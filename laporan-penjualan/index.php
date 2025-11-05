@@ -16,7 +16,7 @@ require "../template/header.php";
 require "../template/navbar.php";
 require "../template/sidebar.php";
 
-$penjualan = getData("SELECT * FROM tbl_jual_head");
+$penjualan = getData("SELECT * FROM tbl_transaksi_jual");
 
 ?>
 <div class="content-wrapper">

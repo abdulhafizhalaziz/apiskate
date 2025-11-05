@@ -18,7 +18,7 @@ require "../template/sidebar.php";
 
 $id = $_GET['id'];
 $tgl = $_GET['tgl'];
-$penjualan = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$id'" );
+$penjualan = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$id' AND jenis = 'jual'" );
 ?>
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
@@ -69,9 +69,9 @@ $penjualan = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$id'" );
                                     <td>
                                         <?= $no++ ?>
                                     </td>
-                                    <td><?= $jual['barcode'] ?></td>
+                                    <td><?= $jual['kode_brg'] ?></td>
                                     <td><?= $jual['nama_brg'] ?></td>
-                                    <td class="text-center"><?= number_format($jual['harga_jual'], 0, ',', '.') ?></td>
+                                    <td class="text-center"><?= number_format($jual['harga'], 0, ',', '.') ?></td>
                                     <td class="text-center"><?= $jual['qty'] ?></td>
                                     <td class="text-center"><?= number_format($jual['jml_harga'], 0, ',', '.') ?></td>
                                 </tr>

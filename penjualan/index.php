@@ -219,17 +219,17 @@ if (isset($_POST['simpan'])) {
                         <tbody>
                             <?php
                             $no = 1;
-                            $brgDetail = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$noJual'");
+                            $brgDetail = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$noJual' AND jenis = 'jual'");
                             foreach ($brgDetail as $detail) { ?>
                                 <tr>
                                     <td><?= $no++ ?></td>
-                                    <td><?= $detail['barcode'] ?></td>
+                                    <td><?= $detail['kode_brg'] ?></td>
                                     <td><?= $detail['nama_brg'] ?></td>
-                                    <td class="text-right"><?= number_format($detail['harga_jual'], 0, ',', '.') ?></td>
+                                    <td class="text-right"><?= number_format($detail['harga'], 0, ',', '.') ?></td>
                                     <td class="text-right"><?= $detail['qty'] ?></td>
                                     <td class="text-right"><?= number_format($detail['jml_harga'], 0, ',', '.') ?></td>
                                     <td class="text-center">
-                                        <a href="?barcode=<?= $detail['barcode'] ?>&idJual=<?= $detail['no_jual'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $detail['tgl_jual'] ?>&msg=deleted"
+                                        <a href="?barcode=<?= $detail['kode_brg'] ?>&idJual=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $detail['tgl_transaksi'] ?>&msg=deleted"
                                             class="btn btn-sm btn-danger"
                                             onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i
                                                 class="fas fa-trash"></i></a>
