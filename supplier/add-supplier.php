@@ -18,7 +18,9 @@ require "../template/sidebar.php";
 
 $alert  = '';
 
+
 if (isset($_POST['simpan'])) {
+  $_POST['tipe'] = 'SUPPLIER';
   if(insert($_POST)){
     $alert = '<div class="alert alert-success alert-dismissible fade show" role="alert">
   <i class="icon fas fa-check"></i>Supplier berhasil ditambahkan..
@@ -41,7 +43,7 @@ if (isset($_POST['simpan'])) {
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
+              <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
               <li class="breadcrumb-item"><a href="<?= $main_url ?>supplier/data-Supplier.php">Supplier</a></li>
               <li class="breadcrumb-item active">Add Supplier</li>
             </ol>
@@ -57,7 +59,7 @@ if (isset($_POST['simpan'])) {
             <div class="card-header">
               <h3 class="card-title"><i class="fas fa-plus fa-sm"></i> Add Supplier</h3>
               <button type="submit" name="simpan" class="btn btn-primary btn-sm float-right"><i class="fa-solid fa-floppy-disk"></i> Simpan</button>
-              <button type="reset" class="btn btn-danger btn-sm float-right mr-1">Reset</button>
+              <button type="reset" class="btn btn-danger btn-sm float-right mr-1">Atur ulang</button>
             </div>
             <div class="card-body">
                 <div class="row">

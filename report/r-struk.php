@@ -10,8 +10,8 @@ require "../config/config.php";
 require "../config/functions.php";
 
 $nota = $_GET['nota'];
-$dataJual = getData("SELECT * FROM tbl_jual_head WHERE no_jual = '$nota'")[0];
-$itemJual = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$nota'");
+$dataJual = getData("SELECT * FROM tbl_transaksi WHERE no_transaksi = '$nota' AND tipe_transaksi = 'JUAL'")[0];
+$itemJual = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$nota'");
 
 ?>
 
@@ -57,7 +57,7 @@ $itemJual = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$nota'");
                 <td colspan="2" style="width: 70px;">Qty: </td>
                 <td style="width: 10px; text-align: right;"><?= $item['qty'] ?></td>
                 <td style="width: 10px; text-align: right;" colspan="2">x
-                    <?= number_format($item['harga_jual'], 0, '.', ',') ?></td>
+                    <?= number_format($item['harga'], 0, '.', ',') ?></td>
                 <td style="width: 10px; text-align: right;" colspan="2">
                     <?= number_format($item['jml_harga'], 0, '.', ',') ?></td>
             </tr>
@@ -76,7 +76,7 @@ $itemJual = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$nota'");
             <td colspan="3" style="width: 100px;"></td>
             <td style="width: 50px; text-align: right;">Bayar</td>
             <td colspan="2" style="width: 70px; text-align: right;">
-                <b><?= number_format($dataJual['jml_bayar'], 0, '.', ',') ?></b></td>
+                <b><?= number_format($dataJual['bayar'], 0, '.', ',') ?></b></td>
         </tr>
     </table>
     <table style="border-bottom: solid 2px; font-size: 14px; width: 240px;">
@@ -94,9 +94,9 @@ $itemJual = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$nota'");
     </table>
 
     <script>
-        setTimeout(function() => {
+        setTimeout(function(){
             window.print();
-        }, 5000);
+        }, 500);
     </script>
 </body>
 

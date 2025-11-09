@@ -25,9 +25,9 @@ if (isset($_POST['update'])) {
     }
 }
 
-$id = $_GET['id'];
 
-$sqlEdit = "SELECT * FROM tbl_supplier WHERE id_supplier = $id";
+$id = $_GET['id'];
+$sqlEdit = "SELECT * FROM tbl_relasi WHERE id_relasi = $id AND tipe = 'SUPPLIER'";
 $supplier = getData($sqlEdit)[0];
 
 ?>
@@ -43,7 +43,7 @@ $supplier = getData($sqlEdit)[0];
         </div><!-- /.col -->
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
+            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
             <li class="breadcrumb-item"><a href="<?= $main_url ?>supplier/data-supplier.php">Supplier</a></li>
             <li class="breadcrumb-item active">Edit Supplier</li>
             </ol>
@@ -59,11 +59,11 @@ $supplier = getData($sqlEdit)[0];
             <div class="card-header">
             <h3 class="card-title"><i class="fas fa-plus fa-sm"></i> Edit Supplier</h3>
             <button type="submit" name="update" class="btn btn-primary btn-sm float-right"><i class="fa-solid fa-floppy-disk"></i> Update</button>
-            <button type="reset" class="btn btn-danger btn-sm float-right mr-1">Reset</button>
+            <button type="reset" class="btn btn-danger btn-sm float-right mr-1">Atur ulang</button>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <input type="hidden" name='id' value="<?= $supplier['id_supplier'] ?>">
+                    <input type="hidden" name='id' value="<?= $supplier['id_relasi'] ?>">
                     <div class="col-lg-8 mb-3">
                         <div class="form-group">
                             <label for="name">Nama</label>

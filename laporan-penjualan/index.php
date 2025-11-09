@@ -16,7 +16,7 @@ require "../template/header.php";
 require "../template/navbar.php";
 require "../template/sidebar.php";
 
-$penjualan = getData("SELECT * FROM tbl_jual_head");
+$penjualan = getData("SELECT t.*, r.nama AS relasi_nama FROM tbl_transaksi t JOIN tbl_relasi r ON r.id_relasi = t.id_relasi WHERE t.tipe_transaksi = 'JUAL'");
 
 ?>
 <div class="content-wrapper">
@@ -29,7 +29,7 @@ $penjualan = getData("SELECT * FROM tbl_jual_head");
                 </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
                         <li class="breadcrumb-item active">Penjualan</li>
                     </ol>
                 </div><!-- /.col -->
@@ -66,12 +66,12 @@ $penjualan = getData("SELECT * FROM tbl_jual_head");
                                     <td>
                                         <?= $no++ ?>
                                     </td>
-                                    <td><?= $jual['no_jual'] ?></td>
-                                    <td><?= in_date($jual['tgl_jual']) ?></td>
-                                    <td class="text-center"><?= $jual['customer'] ?></td>
+                                    <td><?= $jual['no_transaksi'] ?></td>
+                                    <td><?= in_date($jual['tgl_transaksi']) ?></td>
+                                    <td class="text-center"><?= $jual['relasi_nama'] ?></td>
                                     <td class="text-center"><?= number_format($jual['total'], 0, ',', '.') ?></td>
                                     <td class="text-center">
-                                        <a href="detail-penjualan.php?id=<?=$jual['no_jual']?>&tgl=<?=in_date($jual['tgl_jual'])?>" class="btn btn-sm btn-info" title="Rincian Barang">Detail</a>
+                                        <a href="detail-penjualan.php?id=<?=$jual['no_transaksi']?>&tgl=<?=in_date($jual['tgl_transaksi'])?>" class="btn btn-sm btn-info" title="Rincian Barang">Detail</a>
                                     </td>
                                 </tr>
                                 <?php

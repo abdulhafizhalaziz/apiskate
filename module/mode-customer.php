@@ -12,9 +12,9 @@ function insert($data){
     $telpon  = mysqli_real_escape_string($koneksi, $data['telpon']);
     $alamat  = mysqli_real_escape_string($koneksi, $data['alamat']);
     $ketr    = mysqli_real_escape_string($koneksi, $data['ketr']);
-
-    $sqlCustomer    = "INSERT INTO tbl_customer VALUES (null, '$nama', '$telpon', '$ketr', '$alamat')";
-    mysqli_query($koneksi, $sqlCustomer);
+    $tipe    = 'CUSTOMER';
+    $sqlRelasi = "INSERT INTO tbl_relasi (nama, telpon, alamat, deskripsi, tipe) VALUES ('$nama', '$telpon', '$alamat', '$ketr', '$tipe')";
+    mysqli_query($koneksi, $sqlRelasi);
 
     return mysqli_affected_rows($koneksi);
 }
@@ -22,7 +22,7 @@ function insert($data){
 function delete($id){
     global $koneksi;
 
-    $sqlDelete = "DELETE FROM tbl_customer WHERE id_customer = $id";
+    $sqlDelete = "DELETE FROM tbl_relasi WHERE id_relasi = $id AND tipe = 'CUSTOMER'";
     mysqli_query($koneksi, $sqlDelete);
     
     return mysqli_affected_rows($koneksi);
@@ -37,12 +37,12 @@ function update($data) {
     $alamat  = mysqli_real_escape_string($koneksi, $data['alamat']);
     $ketr    = mysqli_real_escape_string($koneksi, $data['ketr']);
 
-    $sqlCustomer    = "UPDATE tbl_customer SET
+    $sqlCustomer    = "UPDATE tbl_relasi SET
                         nama    = '$nama',
                         telpon  = '$telpon',
                         deskripsi = '$ketr',
                         alamat  = '$alamat'
-                        WHERE id_customer = $id    
+                        WHERE id_relasi = $id AND tipe = 'CUSTOMER'   
                         ";
     mysqli_query($koneksi, $sqlCustomer);
     

@@ -12,13 +12,9 @@ require "../config/functions.php";
 require "../module/mode-customer.php";
 
 $id = $_GET['id'];
-
-if (delete($id)) {
-    echo "
-            <script>document.location.href = 'data-customer.php?msg=deleted';</script>
-    ";
+$sql = "DELETE FROM tbl_relasi WHERE id_relasi = $id AND tipe = 'CUSTOMER'";
+if (mysqli_query($koneksi, $sql)) {
+    echo "<script>document.location.href = 'data-customer.php?msg=deleted';</script>";
 } else {
-    echo "
-            <script>document.location.href = 'data-customer.php?msg=aborted';</script>
-    ";
+    echo "<script>document.location.href = 'data-customer.php?msg=aborted';</script>";
 }

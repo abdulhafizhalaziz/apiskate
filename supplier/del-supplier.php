@@ -13,12 +13,10 @@ require "../module/mode-supplier.php";
 
 $id = $_GET['id'];
 
-if (delete($id)) {
-    echo "
-            <script>document.location.href = 'data-supplier.php?msg=deleted';</script>
-    ";
+// Pastikan hanya hapus SUPPLIER
+$sql = "DELETE FROM tbl_relasi WHERE id_relasi = $id AND tipe = 'SUPPLIER'";
+if (mysqli_query($koneksi, $sql)) {
+    echo "<script>document.location.href = 'data-supplier.php?msg=deleted';</script>";
 } else {
-    echo "
-            <script>document.location.href = 'data-supplier.php?msg=aborted';</script>
-    ";
+    echo "<script>document.location.href = 'data-supplier.php?msg=aborted';</script>";
 }

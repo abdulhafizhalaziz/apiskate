@@ -15,15 +15,18 @@ require "template/header.php";
 require "template/navbar.php";
 require "template/sidebar.php";
 
+
+// User count (no change)
 $users = getData("SELECT COUNT(*) as total FROM tbl_user");
 $user_count = $users[0]['total'];
 
-$suppliers = getData("SELECT COUNT(*) as total FROM tbl_supplier");
+$suppliers = getData("SELECT COUNT(*) as total FROM tbl_relasi WHERE tipe = 'SUPPLIER'");
 $supplier_count = $suppliers[0]['total'];
 
-$customers = getData("SELECT COUNT(*) as total FROM tbl_customer");
+$customers = getData("SELECT COUNT(*) as total FROM tbl_relasi WHERE tipe = 'CUSTOMER'");
 $customer_count = $customers[0]['total'];
 
+// Barang count (no change)
 $barang = getData("SELECT COUNT(*) as total FROM tbl_barang");
 $barang_count = $barang[0]['total'];
 
@@ -36,12 +39,12 @@ $barang_count = $barang[0]['total'];
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1 class="m-0">Dashboard</h1>
+          <h1 class="m-0">Dasbor</h1>
         </div><!-- /.col -->
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
-            <li class="breadcrumb-item active">Dashboard</li>
+            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
+            <li class="breadcrumb-item active">Dasbor</li>
           </ol>
         </div><!-- /.col -->
       </div><!-- /.row -->
@@ -125,19 +128,26 @@ $barang_count = $barang[0]['total'];
               <h5 class="card-title">Info Stok Barang</h5>
               <h5><a href="stock" class="float-right" title="laporan stock"><i class="fas fa-arrow-right"></i></a></h5>
             </div>
-            <table class="table">
-              <tbody>
+            <table class="table" style="min-height:75px;">
+                <tbody >
                 <?php
-                $stok = getData("SELECT * FROM tbl_barang WHERE stock < stock_minimal");
 
-                foreach ($stok as $key => $value) {
+
+                // Query langsung ke tbl_barang untuk stok minimal
+                $stok = getData("SELECT * FROM tbl_barang WHERE stock <= stock_minimal");
+
+                if (empty($stok)) {
+                  echo "<tr><td colspan='2' style='min-height:150px; vertical-align:middle; text-align:center; color:#6c757d;'>Tidak ada stok yang kurang</td></tr>";
+                } else {
+                  foreach ($stok as $key => $value) {
                   echo "<tr style='background-color: #f8d7da; color: #721c24;'>
-          <td>" . $value['nama_barang'] . "</td>
-          <td>Stok Kurang</td> 
-        </tr>";
+              <td>" . htmlspecialchars($value['nama_barang']) . "</td>
+              <td>Stok Kurang</td> 
+              </tr>";
+                  }
                 }
                 ?>
-              </tbody>
+                </tbody>
             </table>
           </div>
         </div>

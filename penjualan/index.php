@@ -50,18 +50,20 @@ if ($kode) {
     }
 }
 
-$noJual = generateNo();
+$noJual = isset($_GET['noJual']) ? $_GET['noJual'] : generateNo();
+$tglNotaVal = (isset($_GET['tgl']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['tgl'])) ? $_GET['tgl'] : date('Y-m-d');
 
 
 if (isset($_POST['addbrg'])) {
-    $tgl = $_POST['tglNota'];
+    $tgl = !empty($_POST['tglNota']) ? $_POST['tglNota'] : date('Y-m-d');
+    $noJual = $_POST['noJual'];
     $barcode = trim($_POST['barcode']);
     $qty = trim($_POST['qty']);
     if ($barcode == '' || $qty == '' || $qty <= 0) {
         echo "<script>alert('Barcode dan Qty harus diisi dengan benar!');</script>";
     } else {
         if (insert($_POST)) {
-            echo "<script>document.location = '?tgl=$tgl';</script>";
+            echo "<script>document.location = '?tgl=$tgl&noJual=$noJual';</script>";
         }
     }
 }
@@ -94,7 +96,7 @@ if (isset($_POST['simpan'])) {
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
+                        <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
                         <li class="breadcrumb-item active">Tambah Penjualan</li>
                     </ol>
                 </div>
@@ -112,12 +114,12 @@ if (isset($_POST['simpan'])) {
                                 <label for="noNota" class="col-sm-2 col-form-label">No Nota</label>
                                 <div class="col-sm-4">
                                     <input type="text" name="noJual" class="form-control" id="noNota"
-                                        value="<?= $noJual ?>">
+                                        value="<?= $noJual ?>" readonly>
                                 </div>
                                 <label for="tglNota" class="col-sm-2 col-form-label">Tgl Nota</label>
                                 <div class="col-sm-4">
                                     <input type="date" name="tglNota" class="form-control" id="tglNota"
-                                        value="<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" required>
+                                        value="<?= $tglNotaVal ?>" required>
                                 </div>
                             </div>
                             <div class="form-group row mb-2">
@@ -157,7 +159,7 @@ if (isset($_POST['simpan'])) {
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">
-                                <input type="hidden" name="kodeBrg" value="<?= @$_GET['barcode'] ? $selectBrg['nama_barang'] : '' ?>">
+                                <input type="hidden" name="kodeBrg" value="<?= @$_GET['barcode'] ? $selectBrg['id_barang'] : '' ?>">
                                 <input type="hidden" name="barcode" id="barcode" value="<?= @$_GET['barcode'] ?? '' ?>">
                                 <label for="namaBrg">Nama Barang</label>
                                 <input type="text" name="namaBrg" class="form-control form-control-sm" id="namaBrg"
@@ -180,9 +182,11 @@ if (isset($_POST['simpan'])) {
                         </div>
                         <div class="col-lg-2">
                             <div class="form-group">
-                                <label for="harga">Harga</label>
-                                <input type="number" name="harga" class="form-control form-control-sm" id="harga"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>" readonly>
+                                <label for="hargaDisplay">Harga</label>
+                                <input type="text" class="form-control form-control-sm" id="hargaDisplay"
+                                    value="<?= @$_GET['barcode'] ? number_format($selectBrg['harga_jual'], 0, ',', '.') : '' ?>" readonly>
+                                <input type="hidden" name="harga" id="harga"
+                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>">
                             </div>
                         </div>
                         <div class="col-lg-2">
@@ -194,9 +198,11 @@ if (isset($_POST['simpan'])) {
                         </div>
                         <div class="col-lg-2">
                             <div class="form-group">
-                                <label for="jmlHarga">Jumlah Harga</label>
-                                <input type="number" name="jmlHarga" class="form-control form-control-sm" id="jmlHarga"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>" readonly>
+                                <label for="jmlHargaDisplay">Jumlah Harga</label>
+                                <input type="text" class="form-control form-control-sm" id="jmlHargaDisplay"
+                                    value="<?= @$_GET['barcode'] ? number_format($selectBrg['harga_jual'], 0, ',', '.') : '' ?>" readonly>
+                                <input type="hidden" name="jmlHarga" id="jmlHarga"
+                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>">
                             </div>
                         </div>
                     </div>
@@ -219,17 +225,17 @@ if (isset($_POST['simpan'])) {
                         <tbody>
                             <?php
                             $no = 1;
-                            $brgDetail = getData("SELECT * FROM tbl_jual_detail WHERE no_jual = '$noJual'");
+                            $brgDetail = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$noJual'");
                             foreach ($brgDetail as $detail) { ?>
                                 <tr>
                                     <td><?= $no++ ?></td>
-                                    <td><?= $detail['barcode'] ?></td>
+                                    <td><?= $detail['kode_barang'] ?></td>
                                     <td><?= $detail['nama_brg'] ?></td>
-                                    <td class="text-right"><?= number_format($detail['harga_jual'], 0, ',', '.') ?></td>
+                                    <td class="text-right"><?= number_format($detail['harga'], 0, ',', '.') ?></td>
                                     <td class="text-right"><?= $detail['qty'] ?></td>
                                     <td class="text-right"><?= number_format($detail['jml_harga'], 0, ',', '.') ?></td>
                                     <td class="text-center">
-                                        <a href="?barcode=<?= $detail['barcode'] ?>&idJual=<?= $detail['no_jual'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $detail['tgl_jual'] ?>&msg=deleted"
+                                        <a href="?barcode=<?= $detail['kode_barang'] ?>&idJual=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $tglNotaVal ?>&noJual=<?= $detail['no_transaksi'] ?>&msg=deleted"
                                             class="btn btn-sm btn-danger"
                                             onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i
                                                 class="fas fa-trash"></i></a>
@@ -246,9 +252,9 @@ if (isset($_POST['simpan'])) {
                             <div class="col-sm-9">
                                 <select name="customer" id="customer" class="form-control form-control-sm">
                                     <?php
-                                    $customers = getData("SELECT * FROM tbl_customer");
+                                    $customers = getData("SELECT id_relasi, nama FROM tbl_relasi WHERE tipe = 'CUSTOMER' ORDER BY nama ASC");
                                     foreach ($customers as $customer) { ?>
-                                        <option value="<?= $customer['nama'] ?>"><?= $customer['nama'] ?></option>
+                                        <option value="<?= (int)$customer['id_relasi'] ?>"><?= htmlspecialchars($customer['nama']) ?></option>
                                         <?php
                                     }
                                     ?>
@@ -264,29 +270,32 @@ if (isset($_POST['simpan'])) {
                     </div>
                     <div class="col-lg-4 py-2 px-3">
                         <div class="form-group row mb-2">
-                            <label for="" class="col-sm-3 col-form-label">Bayar</label>
+                            <label for="bayarDisplay" class="col-sm-3 col-form-label">Bayar</label>
                             <div class="col-sm-9">
-                                <input type="number" name="bayar" class="form-control form-control-sm text-right"
-                                    id="bayar" placeholder="Masukkan jumlah bayar">
+                                <input type="text" class="form-control form-control-sm text-right" id="bayarDisplay" placeholder="Masukkan jumlah bayar">
+                                <input type="hidden" name="bayar" id="bayar" value="">
                             </div>
                         </div>
                         <div class="form-group row mb-2">
-                            <label for="kembalian" class="col-sm-3 col-form-label">Kembalian</label>
+                            <label for="kembalianDisplay" class="col-sm-3 col-form-label">Kembalian</label>
                             <div class="col-sm-9">
-                                <input type="number" name="kembalian" class="form-control form-control-sm text-right"
-                                    id="kembalian" readonly>
+                                <input type="text" class="form-control form-control-sm text-right" id="kembalianDisplay" readonly>
+                                <input type="hidden" name="kembalian" id="kembalian" value="">
                             </div>
                         </div>
                     </div>
                     <div class="col lg-4 p-2">
-            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block" disabled><i
+            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn-sm btn-block" disabled><i
                 class="fa fa-save"></i> Simpan</button>
                     </div>
             </form>
         </div>
     </section>
     <script>
-        // Inisialisasi Select2 untuk dropdown barang
+        document.getElementById('tglNota').addEventListener('change', function () {
+            const newUrl = '?tgl=' + this.value + '&noJual=<?= $noJual ?>';
+            window.history.replaceState(null, '', newUrl);
+        });
         $(document).ready(function() {
             $('#kodeBrg').select2({
                 theme: 'bootstrap4',
@@ -295,7 +304,6 @@ if (isset($_POST['simpan'])) {
                 allowClear: true,
                 minimumInputLength: 0,
                 matcher: function(params, data) {
-                    // custom matcher agar search bisa by barcode, id_barang, nama_barang
                     if ($.trim(params.term) === '') {
                         return data;
                     }
@@ -322,8 +330,9 @@ if (isset($_POST['simpan'])) {
                         var barcode = $(item.element).data('barcode') || '';
                         var idbarang = item.id || '';
                         var nama = $(item.element).data('nama') || '';
+                        var stok = $(item.element).data('stock') || 0;
                         $container.find('.select2-result-repository__title').html('<b>' + idbarang + '</b> | ' + barcode + ' | ' + nama);
-                        $container.find('.select2-result-repository__description').text('Harga Jual: Rp ' + numberFormat($(item.element).data('harga')));
+                        $container.find('.select2-result-repository__description').text('Harga Jual: Rp ' + numberFormat($(item.element).data('harga')) + ' | Stok: ' + stok);
                         return $container;
                     }
                     return item.text;
@@ -331,34 +340,30 @@ if (isset($_POST['simpan'])) {
                 templateSelection: function(item) {
                     if (item.element) {
                         var barcode = $(item.element).data('barcode') || '';
-                        var idbarang = item.id || '';
-                        var nama = $(item.element).data('nama') || '';
-                        return idbarang + ' | ' + barcode + ' | ' + nama;
+                        return barcode;
                     }
                     return item.text || item.id;
                 }
             });
 
-            // Autofill form saat barang dipilih
             $('#kodeBrg').on('select2:select', function (e) {
                 var data = e.params.data;
                 var $option = $(data.element);
                 if (data.id && $option.length) {
-                    // Isi field otomatis dari data attributes
                     $('input[name="kodeBrg"]').val(data.id);
                     $('input[name="barcode"]').val($option.data('barcode') || '');
                     $('input[name="namaBrg"]').val($option.data('nama') || '');
                     $('input[name="stok"]').val($option.data('stock') || '');
                     $('input[name="satuan"]').val($option.data('satuan') || '');
                     $('input[name="harga"]').val($option.data('harga') || '');
-                    // Set qty ke 1 dan fokus, hitung total
+                    $('#hargaDisplay').val(numberFormat($option.data('harga') || 0));
                     var qty = 1;
                     var harga = $option.data('harga') || 0;
                     $('input[name="qty"]').val(qty).focus();
                     $('input[name="jmlHarga"]').val(qty * harga);
+                    $('#jmlHargaDisplay').val(numberFormat(qty * harga));
                 }
             });
-            // Clear form saat selection dihapus
             $('#kodeBrg').on('select2:clear', function () {
                 $('input[name="kodeBrg"]').val('');
                 $('input[name="barcode"]').val('');
@@ -368,26 +373,27 @@ if (isset($_POST['simpan'])) {
                 $('input[name="harga"]').val('');
                 $('input[name="qty"]').val('');
                 $('input[name="jmlHarga"]').val('');
+                $('#hargaDisplay').val('');
+                $('#jmlHargaDisplay').val('');
             });
         });
 
-        // Helper format angka
         function numberFormat(num) {
             return parseInt(num).toLocaleString('id-ID');
         }
 
-        // Event listener qty
         document.getElementById('qty').addEventListener('input', function () {
             const qty = parseInt(this.value) || 0;
             const harga = parseInt(document.getElementById('harga').value) || 0;
-            document.getElementById('jmlHarga').value = qty * harga;
+            const total = qty * harga;
+            document.getElementById('jmlHarga').value = total;
+            document.getElementById('jmlHargaDisplay').value = numberFormat(total);
         });
 
         function checkSimpanButton() {
             const bayar = parseInt(document.getElementById('bayar').value) || 0;
             const total = parseInt(document.getElementById('total').value) || 0;
             const simpanBtn = document.getElementById('simpan');
-            // Tombol aktif jika bayar >= total dan bayar > 0
             if (bayar >= total && bayar > 0 && total > 0) {
                 simpanBtn.disabled = false;
             } else {
@@ -395,15 +401,37 @@ if (isset($_POST['simpan'])) {
             }
         }
 
-        document.getElementById('bayar').addEventListener('input', function () {
-            const bayar = parseInt(this.value) || 0;
+        document.getElementById('bayarDisplay').addEventListener('input', function () {
+            // Ambil hanya digit dari input display
+            const rawStr = this.value.replace(/\D/g, '');
+            const bayar = rawStr === '' ? 0 : parseInt(rawStr, 10);
+            // Set ke input hidden numerik
+            document.getElementById('bayar').value = bayar;
+            // Format tampilan kembali dengan titik ribuan
+            this.value = bayar ? numberFormat(bayar) : '';
+
             const total = parseInt(document.getElementById('total').value) || 0;
             const kembalian = bayar - total;
-            document.getElementById('kembalian').value = kembalian >= 0 ? kembalian : 0;
+            const kembalianSafe = kembalian >= 0 ? kembalian : 0;
+            // Set hidden dan display kembalian
+            document.getElementById('kembalian').value = kembalianSafe;
+            document.getElementById('kembalianDisplay').value = kembalianSafe ? numberFormat(kembalianSafe) : '';
+
             checkSimpanButton();
         });
 
-        // Pastikan tombol simpan diupdate saat halaman dimuat
+        // Inisialisasi tampilan saat load (jika ada nilai sebelumnya)
+        window.addEventListener('DOMContentLoaded', function() {
+            const bayarHidden = parseInt(document.getElementById('bayar').value) || 0;
+            if (bayarHidden > 0) {
+                document.getElementById('bayarDisplay').value = numberFormat(bayarHidden);
+            }
+            const kembalianHidden = parseInt(document.getElementById('kembalian').value) || 0;
+            if (kembalianHidden > 0) {
+                document.getElementById('kembalianDisplay').value = numberFormat(kembalianHidden);
+            }
+        });
+
         window.addEventListener('DOMContentLoaded', function() {
             checkSimpanButton();
         });

@@ -11,7 +11,7 @@ require "../config/functions.php";
 
 $tgl1 = $_GET['tgl1'];
 $tgl2 = $_GET['tgl2'];
-$dataBeli = getData("SELECT * FROM tbl_beli_head WHERE tgl_beli BETWEEN '$tgl1' AND '$tgl2'");
+$dataBeli = getData("SELECT t.*, r.nama AS relasi_nama FROM tbl_transaksi t JOIN tbl_relasi r ON r.id_relasi = t.id_relasi WHERE t.tipe_transaksi = 'BELI' AND t.tgl_transaksi BETWEEN '$tgl1' AND '$tgl2'");
 ?>
 
 <!DOCTYPE html>
@@ -59,9 +59,9 @@ $dataBeli = getData("SELECT * FROM tbl_beli_head WHERE tgl_beli BETWEEN '$tgl1' 
             foreach ($dataBeli as $beli) { ?>
                 <tr>
                     <td><?= $no++ ?></td>
-                    <td><?= date('d-m-Y', strtotime($beli['tgl_beli'])) ?></td>
-                    <td><?= $beli['no_beli'] ?></td>
-                    <td><?= $beli['supplier'] ?></td>
+                    <td><?= date('d-m-Y', strtotime($beli['tgl_transaksi'])) ?></td>
+                    <td><?= $beli['no_transaksi'] ?></td>
+                    <td><?= $beli['relasi_nama'] ?></td>
                     <td>Rp. <?= number_format($beli['total'], 0, ',', '.') ?></td>
                 </tr>
             <?php } ?>

@@ -60,7 +60,7 @@ if ($msg == 'updated') {
         </div><!-- /.col -->
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
+            <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
             <li class="breadcrumb-item active">Data Customer</li>
             </ol>
         </div><!-- /.col -->
@@ -98,7 +98,7 @@ if ($msg == 'updated') {
                     <tbody>
                         <?php
                         $no = 1;
-                        $customers = getData("SELECT * FROM tbl_customer");
+                        $customers = getData("SELECT * FROM tbl_relasi WHERE tipe = 'CUSTOMER' ORDER BY nama ASC");
                         foreach ($customers as $customer) :
                         ?>
                             <tr>
@@ -108,8 +108,8 @@ if ($msg == 'updated') {
                                 <td><?= $customer['alamat'] ?></td>
                                 <td><?= $customer['deskripsi'] ?></td>
                                 <td>
-                                    <a href="edit-customer.php?id=<?= $customer['id_customer'] ?>" class="btn btn-sm btn-warning" title="edit customer"><i class="fas fa-pen"></i></a>
-                                    <a href="del-customer.php?id=<?= $customer['id_customer'] ?>" class="btn btn-sm btn-danger" title="hapus customer" onclick="return confirm('Anda yakin akan menghapus Customer ini ?')"><i class="fas fa-trash"></i></a>
+                                    <a href="edit-customer.php?id=<?= $customer['id_relasi'] ?>" class="btn btn-sm btn-warning" title="edit customer"><i class="fas fa-pen"></i></a>
+                                    <a href="del-customer.php?id=<?= $customer['id_relasi'] ?>" class="btn btn-sm btn-danger" title="hapus customer" onclick="return confirm('Anda yakin akan menghapus Customer ini ?')"><i class="fas fa-trash"></i></a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
