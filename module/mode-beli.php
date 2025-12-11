@@ -1,77 +1,185 @@
 <?php
 
-function generateNo(){
+// ===============================
+// GENERATE NO FAKTUR PEMBELIAN
+// ===============================
+function generateNo() {
     global $koneksi;
 
-    $queryNo = mysqli_query($koneksi, "SELECT max(no_beli) as maxno FROM tbl_transaksi_beli");
-    $row = mysqli_fetch_assoc($queryNo);
+    $queryNo = mysqli_query($koneksi,
+        "SELECT MAX(no_beli) AS maxno FROM tbl_pembelian"
+    );
+
+    $row   = mysqli_fetch_assoc($queryNo);
     $maxno = $row["maxno"] ?? 'PB0000';
 
     $noUrut = (int) substr($maxno, 2, 4);
     $noUrut++;
-    $maxno = 'PB' . sprintf("%04s", $noUrut);
 
-    return $maxno;
+    return 'PB' . sprintf("%04s", $noUrut);
 }
 
-function totalBeli($noBeli){
+// ===============================
+// HITUNG TOTAL PEMBELIAN
+// ===============================
+function totalBeli($noBeli) {
     global $koneksi;
 
-    $totalBeli = mysqli_query($koneksi, "SELECT sum(jml_harga) AS total FROM tbl_transaksi_detail WHERE no_transaksi = '$noBeli' AND jenis = 'beli'");
-    $data  = mysqli_fetch_assoc($totalBeli);
+    $totalBeli = mysqli_query($koneksi,
+        "SELECT SUM(jml_harga) AS total 
+         FROM tbl_detail_beli 
+         WHERE no_beli = '$noBeli'"
+    );
+
+    $data = mysqli_fetch_assoc($totalBeli);
     return $data["total"] ?? 0;
 }
 
-function insert($data){
+// ===============================
+// PASTIKAN HEADER PEMBELIAN ADA
+// ===============================
+function ensureHeaderExists($noBeli, $tgl) {
+    global $koneksi;
+
+    // Cek sudah ada header-nya atau belum
+    $cek = mysqli_query($koneksi,
+        "SELECT no_beli FROM tbl_pembelian WHERE no_beli = '$noBeli'"
+    );
+
+    if (mysqli_num_rows($cek)) {
+        return true; // sudah ada, aman
+    }
+
+    // Ambil 1 supplier sebagai default (biar FK id_supplier tidak error)
+    $qSupp = mysqli_query($koneksi,
+        "SELECT id_supplier FROM tbl_supplier ORDER BY id_supplier LIMIT 1"
+    );
+
+    if (!mysqli_num_rows($qSupp)) {
+        echo "<script>alert('Belum ada data supplier. Tambah minimal 1 supplier dulu di master supplier.');</script>";
+        return false;
+    }
+
+    $rSupp       = mysqli_fetch_assoc($qSupp);
+    $defaultSupp = $rSupp['id_supplier'];
+
+    // Insert header kosong dulu
+    $sqlHeader = "
+        INSERT INTO tbl_pembelian
+        (no_beli, id_supplier, tgl_beli, total, keterangan)
+        VALUES
+        ('$noBeli', '$defaultSupp', '$tgl', 0, '')
+    ";
+
+    mysqli_query($koneksi, $sqlHeader) or die("HEADER ERROR: " . mysqli_error($koneksi));
+    return true;
+}
+
+// ===============================
+// INSERT DETAIL PEMBELIAN
+// ===============================
+function insert($data) {
     global $koneksi;
 
     $no       = mysqli_real_escape_string($koneksi, $data['noBeli']);
     $tgl      = mysqli_real_escape_string($koneksi, $data['tglNota']);
-    $kode     = mysqli_real_escape_string($koneksi, $data['kodeBrg']);
+    $kode     = mysqli_real_escape_string($koneksi, $data['kodeBrg']);   // id_barang
     $nama     = mysqli_real_escape_string($koneksi, $data['namaBrg']);
-    $qty      = mysqli_real_escape_string($koneksi, $data['qty']);
-    $harga    = mysqli_real_escape_string($koneksi, $data['harga']);
-    $jmlharga = mysqli_real_escape_string($koneksi, $data['jmlHarga']);
+    $qty      = (int) $data['qty'];
+    $harga    = (int) $data['harga'];
+    $jmlharga = (int) $data['jmlHarga'];
 
-    if (empty($qty)) {
-        echo "<script>alert('Qty barang tidak boleh kosong');</script>";
+    if ($kode == '' || $qty <= 0) {
+        echo "<script>alert('Barang dan qty harus diisi dengan benar!');</script>";
         return false;
     }
-    $cekbrg = mysqli_query($koneksi, "SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$no' AND kode_brg = '$kode' AND jenis = 'beli'");
+
+    // Pastikan header sudah ada → biar FK no_beli tidak error
+    if (!ensureHeaderExists($no, $tgl)) {
+        return false;
+    }
+
+    // CEK DUPLIKAT BARANG BERDASARKAN id_barang
+    $cekbrg = mysqli_query($koneksi,
+        "SELECT * FROM tbl_detail_beli 
+         WHERE no_beli = '$no' AND id_barang = '$kode'"
+    );
+
     if (mysqli_num_rows($cekbrg)) {
-        echo "<script>alert('Barang sudah ada, hapus dulu jika ingin mengubah qty.');</script>";
+        echo "<script>alert('Barang sudah ada. Hapus dulu jika ingin mengubah qty.');</script>";
         return false;
     }
 
-    $sqlBeli = "INSERT INTO tbl_transaksi_detail (no_transaksi, tgl_transaksi, kode_brg, nama_brg, qty, harga, jml_harga, jenis) VALUES ('$no', '$tgl', '$kode', '$nama', $qty, $harga, $jmlharga, 'beli')";
-    mysqli_query($koneksi, $sqlBeli);
+    // INSERT DETAIL BELI (kolom sesuai struktur DB)
+    $sqlBeli = "
+        INSERT INTO tbl_detail_beli
+        (no_beli, tgl_beli, id_barang, nama_brg, qty, harga_beli, jml_harga)
+        VALUES 
+        ('$no', '$tgl', '$kode', '$nama', $qty, $harga, $jmlharga)
+    ";
 
-    mysqli_query($koneksi, "UPDATE tbl_barang SET stock = stock + $qty WHERE id_barang = '$kode'");
-    return mysqli_affected_rows($koneksi);
+    mysqli_query($koneksi, $sqlBeli) or die('DETAIL ERROR: ' . mysqli_error($koneksi));
+
+    // UPDATE STOK BARANG
+    mysqli_query($koneksi,
+        "UPDATE tbl_barang 
+         SET stock = stock + $qty 
+         WHERE id_barang = '$kode'"
+    ) or die('STOCK ERROR: ' . mysqli_error($koneksi));
+
+    return true;
 }
 
-function delete($idbrg, $idbeli, $qty){
+// ===============================
+// DELETE DETAIL PEMBELIAN
+// ===============================
+function delete($id_barang, $no_beli, $qty) {
     global $koneksi;
 
-    $sqlDel = "DELETE FROM tbl_transaksi_detail WHERE kode_brg = '$idbrg' AND no_transaksi = '$idbeli' AND jenis = 'beli'";
-    mysqli_query($koneksi, $sqlDel);
+    // HAPUS DETAIL
+    mysqli_query($koneksi,
+        "DELETE FROM tbl_detail_beli 
+         WHERE id_barang = '$id_barang' AND no_beli = '$no_beli'"
+    ) or die('DELETE DETAIL ERROR: ' . mysqli_error($koneksi));
 
-    mysqli_query($koneksi, "UPDATE tbl_barang SET stock = stock - $qty WHERE id_barang = '$idbrg'");
+    // KEMBALIKAN STOK
+    mysqli_query($koneksi,
+        "UPDATE tbl_barang 
+         SET stock = stock - $qty 
+         WHERE id_barang = '$id_barang'"
+    ) or die('STOCK ROLLBACK ERROR: ' . mysqli_error($koneksi));
 
-    return mysqli_affected_rows($koneksi);
+    return true;
 }
 
-function simpan($data){
+// ===============================
+// SIMPAN TRANSAKSI PEMBELIAN
+// ===============================
+function simpan($data) {
     global $koneksi;
 
     $noBeli     = mysqli_real_escape_string($koneksi, $data['noBeli']);
     $tgl        = mysqli_real_escape_string($koneksi, $data['tglNota']);
-    $total      = mysqli_real_escape_string($koneksi, $data['total']);
-    $supplier   = mysqli_real_escape_string($koneksi, $data['supplier']);
+    $supplier   = mysqli_real_escape_string($koneksi, $data['supplier']);  // id_supplier
+    $total      = (int) $data['total'];
     $keterangan = mysqli_real_escape_string($koneksi, $data['ketr']);
 
-    $sqlBeli    = "INSERT INTO tbl_transaksi_beli VALUES ('$noBeli','$tgl','$supplier',$total,'$keterangan')";
-    mysqli_query($koneksi, $sqlBeli);
+    // pastikan header sudah ada dulu
+    if (!ensureHeaderExists($noBeli, $tgl)) {
+        return false;
+    }
 
-    return mysqli_affected_rows($koneksi);
+    // UPDATE HEADER (jangan INSERT lagi)
+    $sqlBeli = "
+        UPDATE tbl_pembelian SET
+            id_supplier = '$supplier',
+            tgl_beli    = '$tgl',
+            total       = $total,
+            keterangan  = '$keterangan'
+        WHERE no_beli = '$noBeli'
+    ";
+
+    mysqli_query($koneksi, $sqlBeli) or die('SAVE HEADER ERROR: ' . mysqli_error($koneksi));
+
+    return true;
 }

@@ -1,81 +1,60 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["ssLoginPOS"])) {
-    header("location: ../auth/login.php");
-    exit();
-}
-
 require "../config/config.php";
 require "../config/functions.php";
 
 $tgl1 = $_GET['tgl1'];
 $tgl2 = $_GET['tgl2'];
-$dataBeli = getData("SELECT * FROM tbl_transaksi_beli WHERE tgl_beli BETWEEN '$tgl1' AND '$tgl2'");
+
+$data = getData("
+    SELECT p.*, s.nama AS supplier
+    FROM tbl_pembelian p
+    LEFT JOIN tbl_supplier s ON p.id_supplier=s.id_supplier
+    WHERE p.tgl_beli BETWEEN '$tgl1' AND '$tgl2'
+");
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Pembelian</title>
+<title>Laporan Pembelian</title>
 </head>
 
-<body>
-    <div style="text-align: center;">
-        <h2 style="margin-bottom: -15px;">
-            Rekap Laporan Pembelian
-        </h2>
-        <h2 style="margin-bottom: 15px;">
-            SnackinajaPOS
-        </h2>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <td colspan="5" style="height: 5px;">
-                    <hr style="margin-bottom: 2px; margin-left: -5px;" , size="3" , color="grey">
-                </td>
-            </tr>
-            <tr>
-                <th>No</th>
-                <th style="120px">Tgl Pembelian</th>
-                <th style="120px">ID Pembelian</th>
-                <th style="300px">Suplier</th>
-                <th>Total Pembelian</th>
-            </tr>
-            <tr>
-                <td colspan="5" style="height: 5px;">
-                    <hr style="margin-bottom: 2px; margin-left: -5px; margin-top: 1px;" , size="3" , color="grey">
-                </td>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            $no = 1;
-            foreach ($dataBeli as $beli) { ?>
-                <tr>
-                    <td><?= $no++ ?></td>
-                    <td><?= date('d-m-Y', strtotime($beli['tgl_beli'])) ?></td>
-                    <td><?= $beli['no_beli'] ?></td>
-                    <td><?= $beli['supplier'] ?></td>
-                    <td>Rp. <?= number_format($beli['total'], 0, ',', '.') ?></td>
-                </tr>
-            <?php } ?>
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="5" style="height: 5px;">
-                    <hr style="margin-bottom: 2px; margin-left: -5px; margin-top: 1px;" , size="3" , color="grey">
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+<body onload="window.print()">
+
+<div style="text-align:center;">
+    <h2>Laporan Pembelian</h2>
+    <h3>Snackinaja POS</h3>
+</div>
+
+<hr>
+
+<table width="100%" border="1" cellspacing="0" cellpadding="5">
+<thead>
+<tr>
+    <th>No</th>
+    <th>Tanggal</th>
+    <th>No Beli</th>
+    <th>Supplier</th>
+    <th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+<?php
+$no = 1;
+foreach ($data as $d) { ?>
+<tr>
+    <td><?= $no++ ?></td>
+    <td><?= date('d-m-Y', strtotime($d['tgl_beli'])) ?></td>
+    <td><?= $d['no_beli'] ?></td>
+    <td><?= $d['supplier'] ?></td>
+    <td><?= number_format($d['total']) ?></td>
+</tr>
+<?php } ?>
+</tbody>
+
+</table>
+
 </body>
-<script>
-    window.print();
-</script>
 </html>

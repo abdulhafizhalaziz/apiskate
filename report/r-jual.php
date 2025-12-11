@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 if (!isset($_SESSION["ssLoginPOS"])) {
     header("location: ../auth/login.php");
     exit();
@@ -11,71 +10,57 @@ require "../config/functions.php";
 
 $tgl1 = $_GET['tgl1'];
 $tgl2 = $_GET['tgl2'];
-$dataJual = getData("SELECT * FROM tbl_transaksi_jual WHERE tgl_jual BETWEEN '$tgl1' AND '$tgl2'");
+
+$dataJual = getData("
+    SELECT p.*, c.nama
+    FROM tbl_penjualan p
+    LEFT JOIN tbl_customer c ON p.id_customer = c.id_customer
+    WHERE p.tgl_jual BETWEEN '$tgl1' AND '$tgl2'
+    ORDER BY p.tgl_jual ASC
+");
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Penjualan</title>
 </head>
 
 <body>
-    <div style="text-align: center;">
-        <h2 style="margin-bottom: -15px;">
-            Rekap Laporan Penjualan
-        </h2>
-        <h2 style="margin-bottom: 15px;">
-            SnackinajaPOS
-        </h2>
+    <div style="text-align:center;">
+        <h2>Rekap Laporan Penjualan</h2>
+        <h3>Snackinaja POS</h3>
     </div>
-    <table>
+
+    <table width="100%">
         <thead>
-            <tr>
-                <td colspan="5" style="height: 5px;">
-                    <hr style="margin-bottom: 2px; margin-left: -5px;" , size="3" , color="grey">
-                </td>
-            </tr>
+            <tr><td colspan="5"><hr></td></tr>
             <tr>
                 <th>No</th>
-                <th style="120px">Tgl Penjualan</th>
-                <th style="120px">ID Penjualan</th>
-                <th style="300px">Suplier</th>
-                <th>Total Penjualan</th>
+                <th>Tgl Penjualan</th>
+                <th>No Transaksi</th>
+                <th>Customer</th>
+                <th>Total</th>
             </tr>
-            <tr>
-                <td colspan="5" style="height: 5px;">
-                    <hr style="margin-bottom: 2px; margin-left: -5px; margin-top: 1px;" , size="3" , color="grey">
-                </td>
-            </tr>
+            <tr><td colspan="5"><hr></td></tr>
         </thead>
+
         <tbody>
-            <?php
-            $no = 1;
-            foreach ($dataJual as $jual) { ?>
-                <tr>
-                    <td><?= $no++ ?></td>
-                    <td><?= date('d-m-Y', strtotime($jual['tgl_jual'])) ?></td>
-                    <td><?= $jual['no_jual'] ?></td>
-                    <td><?= $jual['customer'] ?></td>
-                    <td>Rp. <?= number_format($jual['total'], 0, ',', '.') ?></td>
-                </tr>
-            <?php } ?>
-        </tbody>
-        <tfoot>
+        <?php $no = 1; foreach ($dataJual as $d) { ?>
             <tr>
-                <td colspan="5" style="height: 5px;">
-                    <hr style="margin-bottom: 2px; margin-left: -5px; margin-top: 1px;" , size="3" , color="grey">
-                </td>
+                <td><?= $no++ ?></td>
+                <td><?= date('d-m-Y', strtotime($d['tgl_jual'])) ?></td>
+                <td><?= $d['no_jual'] ?></td>
+                <td><?= $d['nama'] ?></td>
+                <td>Rp <?= number_format($d['total'], 0, ',', '.') ?></td>
             </tr>
+        <?php } ?>
+        </tbody>
+
+        <tfoot>
+            <tr><td colspan="5"><hr></td></tr>
         </tfoot>
     </table>
+
+    <script> window.print(); </script>
 </body>
-<script>
-    window.print();
-</script>
 </html>

@@ -1,5 +1,4 @@
 <?php
-
 session_start();
 
 if (!isset($_SESSION["ssLoginPOS"])) {
@@ -9,80 +8,88 @@ if (!isset($_SESSION["ssLoginPOS"])) {
 
 require "../config/config.php";
 require "../config/functions.php";
-require "../module/mode-barang.php";
 
-$title = "Laporan - snackinaja";
+$title = "Detail Pembelian - Snackinaja";
 require "../template/header.php";
 require "../template/navbar.php";
 require "../template/sidebar.php";
 
-$id = $_GET['id'];
-$tgl = $_GET['tgl'];
-$pembelian = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$id' AND jenis = 'beli'" );
+$id = $_GET['id']; // no_beli
+$tgl = $_GET['tgl']; // formatted date
+
+// AMBIL DETAIL BARANG DENGAN JOIN
+$pembelian = getData("
+    SELECT d.*, b.nama_barang 
+    FROM tbl_detail_beli d
+    JOIN tbl_barang b ON d.id_barang = b.id_barang
+    WHERE d.no_beli = '$id'
+");
 ?>
+
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
+
     <div class="content-header">
         <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0">Detail Pembelian</h1>
-                </div><!-- /.col -->
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
-                        <li class="breadcrumb-item"><a href="<?= $main_url ?>laporan-pembelian">Laporan Pembelian</a></li>
-                        <li class="breadcrumb-item active">Pembelian</li>
-                    </ol>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
+            <h1 class="m-0">Detail Pembelian</h1>
+
+            <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="<?= $main_url ?>laporan-pembelian">Laporan Pembelian</a></li>
+                <li class="breadcrumb-item active">Detail</li>
+            </ol>
+        </div>
     </div>
+
     <section class="content">
         <div class="container-fluid">
+
             <div class="card">
-                <!-- <?php if ($alert != '') {
-                    echo $alert;
-                } ?> -->
+
                 <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-list fa-sm"></i> Rincian Barang</h3>
-                    <button type="button" class="btn btn-sm btn-success float-right "><?=$tgl?></button>
-                    <button type="button" class="btn btn-sm btn-warning float-right mr-1"><?=$id?></button>
+
+                    <button class="btn btn-sm btn-success float-right"><?= $tgl ?></button>
+                    <button class="btn btn-sm btn-warning float-right mr-1"><?= $id ?></button>
                 </div>
+
                 <div class="card-body table-responsive p-3">
+
                     <table class="table table-hover text-nowrap">
                         <thead>
                             <tr>
                                 <th>No</th>
                                 <th>Kode Barang</th>
                                 <th>Nama Barang</th>
-                                <th>Harga Beli</th>
+                                <th class="text-right">Harga Beli</th>
                                 <th class="text-center">Qty</th>
-                                <th class="text-center">Jumlah Harga</th>
+                                <th class="text-right">Jumlah Harga</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             <?php
                             $no = 1;
-                            foreach ($pembelian as $beli) { ?>
+                            foreach ($pembelian as $row) { ?>
                                 <tr>
-                                    <td>
-                                        <?= $no++ ?>
-                                    </td>
-                                    <td><?= $beli['kode_brg'] ?></td>
-                                    <td><?= $beli['nama_brg'] ?></td>
-                                    <td class="text-center"><?= number_format($beli['harga'], 0, ',', '.') ?></td>
-                                    <td class="text-center"><?= $beli['qty'] ?></td>
-                                    <td class="text-center"><?= number_format($beli['jml_harga'], 0, ',', '.') ?></td>
+                                    <td><?= $no++ ?></td>
+                                    <td><?= $row['id_barang'] ?></td>
+                                    <td><?= $row['nama_barang'] ?></td>
+                                    <td class="text-right"><?= number_format($row['harga_beli'], 0, ',', '.') ?></td>
+                                    <td class="text-center"><?= $row['qty'] ?></td>
+                                    <td class="text-right"><?= number_format($row['jml_harga'], 0, ',', '.') ?></td>
                                 </tr>
-                                <?php
-                            }
-                            ?>
+                            <?php } ?>
                         </tbody>
+
                     </table>
+
                 </div>
+
             </div>
+
         </div>
     </section>
+
 </div>
-<?php require "../template/footer.php";?>
+
+<?php require "../template/footer.php"; ?>

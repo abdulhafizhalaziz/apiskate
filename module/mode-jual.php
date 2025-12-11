@@ -1,88 +1,151 @@
 <?php
 
+/* ===============================
+   GENERATE NO FAKTUR PENJUALAN
+=================================*/
 function generateNo(){
     global $koneksi;
 
-    $queryNo = mysqli_query($koneksi, "SELECT max(no_jual) as maxno FROM tbl_transaksi_jual");
-    $row = mysqli_fetch_assoc($queryNo);
-    $maxno = $row["maxno"] ?? 'PB0000';
+    $q = mysqli_query($koneksi, "SELECT MAX(no_jual) AS maxno FROM tbl_penjualan");
+    $row = mysqli_fetch_assoc($q);
+    $max = $row["maxno"] ?? 'PJ0000';
+    
+    $n = (int) substr($max, 2, 4);
+    $n++;
 
-    $noUrut = (int) substr($maxno, 2, 4);
-    $noUrut++;
-    $maxno = 'PJ' . sprintf("%04s", $noUrut);
-
-    return $maxno;
+    return 'PJ' . sprintf("%04d", $n);
 }
 
+/* ===============================
+   HITUNG TOTAL
+=================================*/
 function totalJual($noJual){
     global $koneksi;
 
-    $totalJual = mysqli_query($koneksi, "SELECT sum(jml_harga) AS total FROM tbl_transaksi_detail WHERE no_transaksi = '$noJual' AND jenis = 'jual'");
-    $data  = mysqli_fetch_assoc($totalJual);
-    return $data["total"] ?? 0;
+    $q = mysqli_query($koneksi,
+        "SELECT SUM(jml_harga) AS total 
+         FROM tbl_detail_jual 
+         WHERE no_jual = '$noJual'"
+    );
+
+    $d = mysqli_fetch_assoc($q);
+    return $d["total"] ?? 0;
 }
 
-
+/* ===============================
+   INSERT DETAIL JUAL (FINAL)
+=================================*/
 function insert($data){
     global $koneksi;
 
     $no       = mysqli_real_escape_string($koneksi, $data['noJual']);
     $tgl      = mysqli_real_escape_string($koneksi, $data['tglNota']);
-    $kode     = mysqli_real_escape_string($koneksi, $data['barcode']);
+    $kode     = mysqli_real_escape_string($koneksi, $data['kodeBrg']);
     $nama     = mysqli_real_escape_string($koneksi, $data['namaBrg']);
-    $qty      = mysqli_real_escape_string($koneksi, $data['qty']);
-    $harga    = mysqli_real_escape_string($koneksi, $data['harga']);
-    $jmlharga = mysqli_real_escape_string($koneksi, $data['jmlHarga']);
-    $stok = mysqli_real_escape_string($koneksi, $data['stok']);
+    $barcode  = $data['barcode'];
+    $qty      = (int)$data['qty'];
+    $harga    = (int)$data['harga'];
+    $stok     = (int)$data['stok'];
+    $jml      = $qty * $harga;
 
-    if (empty($qty)) {
-        echo "<script>alert('Qty barang tidak boleh kosong');</script>";
+    // ========== DEBUG KE JAVASCRIPT ==========
+    echo "
+    <script>
+        console.log('===== DEBUG INSERT() =====');
+        console.log('noJual      : $no');
+        console.log('tglNota     : $tgl');
+        console.log('id_barang   : $kode');
+        console.log('nama_barang : $nama');
+        console.log('barcode     : $barcode');
+        console.log('qty         : $qty');
+        console.log('harga       : $harga');
+        console.log('stok        : $stok');
+        console.log('subtotal    : $jml');
+    </script>
+    ";
+    // ==========================================
+
+
+    if ($kode == "" || $qty <= 0) {
+        echo "<script>alert('Barang atau qty belum benar!');</script>";
         return false;
-    } else {
-        if ($qty > $stok) {
-            echo "<script>alert('Stok tidak mencukupi');</script>";
-            return false;
-        }
     }
 
-    // cek barang sudah diinput
-    $cekbrg = mysqli_query($koneksi, "SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$no' AND kode_brg = '$kode' AND jenis = 'jual'");
-    if (mysqli_num_rows($cekbrg)) {
-        echo "<script>alert('Barang sudah ada, hapus dulu jika ingin mengubah qty.');</script>";
+    if ($qty > $stok){
+        echo "<script>alert('Stok tidak mencukupi!');</script>";
         return false;
     }
 
-    $sqljual = "INSERT INTO tbl_transaksi_detail (no_transaksi, tgl_transaksi, kode_brg, nama_brg, qty, harga, jml_harga, jenis) VALUES ('$no', '$tgl', '$kode', '$nama', $qty, $harga, $jmlharga, 'jual')";
-    mysqli_query($koneksi, $sqljual);
+    $cek = mysqli_query($koneksi,
+        "SELECT * FROM tbl_detail_jual 
+         WHERE no_jual='$no' AND id_barang='$kode'"
+    );
 
-    mysqli_query($koneksi, "UPDATE tbl_barang SET stock = stock - $qty WHERE barcode = '$kode'");
-    return mysqli_affected_rows($koneksi);
+    if (mysqli_num_rows($cek)){
+        echo "<script>alert('Barang sudah ada, hapus dulu untuk ubah qty!');</script>";
+        return false;
+    }
+
+    $sql = "
+        INSERT INTO tbl_detail_jual
+        (no_jual, tgl_jual, barcode, id_barang, nama_brg, qty, harga_jual, jml_harga)
+        VALUES
+        ('$no', '$tgl', '$barcode', '$kode', '$nama', $qty, $harga, $jml)
+    ";
+
+    mysqli_query($koneksi, $sql) or die('DETAIL ERROR: ' . mysqli_error($koneksi));
+
+    mysqli_query($koneksi,
+        "UPDATE tbl_barang SET stock = stock - $qty WHERE id_barang='$kode'"
+    ) or die('STOCK ERROR: ' . mysqli_error($koneksi));;
+
+    return true;
 }
 
-function delete($barcode, $idJual, $qty){
+
+/* ===============================
+   DELETE BARANG
+=================================*/
+function delete($id_brg, $noJual, $qty){
     global $koneksi;
 
-    $sqlDel = "DELETE FROM tbl_transaksi_detail WHERE kode_brg = '$barcode' AND no_transaksi = '$idJual' AND jenis = 'jual'";
-    mysqli_query($koneksi, $sqlDel);
+    mysqli_query($koneksi,
+        "DELETE FROM tbl_detail_jual
+         WHERE id_barang='$id_brg' AND no_jual='$noJual'"
+    );
 
-    mysqli_query($koneksi, "UPDATE tbl_barang SET stock = stock + $qty WHERE barcode = '$barcode'");
+    mysqli_query($koneksi,
+        "UPDATE tbl_barang SET stock = stock + $qty 
+         WHERE id_barang='$id_brg'"
+    );
 
     return mysqli_affected_rows($koneksi);
 }
 
+/* ===============================
+   SIMPAN TRANSAKSI
+=================================*/
 function simpan($data){
     global $koneksi;
 
-    $noJual     = mysqli_real_escape_string($koneksi, $data['noJual']);
-    $tgl        = mysqli_real_escape_string($koneksi, $data['tglNota']);
-    $total      = mysqli_real_escape_string($koneksi, $data['total']);
-    $customer   = mysqli_real_escape_string($koneksi, $data['customer']);
-    $keterangan = mysqli_real_escape_string($koneksi, $data['ketr']);
-    $bayar      = mysqli_real_escape_string($koneksi, $data['bayar']);
-    $kembalian = mysqli_real_escape_string($koneksi, $data['kembalian']);
+    $no      = $data['noJual'];
+    $tgl     = $data['tglNota'];
+    $cust    = $data['customer'];
+    $total   = (int)$data['total'];
+    $bayar   = (int)$data['bayar'];
+    $kembali = (int)$data['kembalian'];
+    $ket     = mysqli_real_escape_string($koneksi, $data['ketr']);
 
-    $sqlJual    = "INSERT INTO tbl_transaksi_jual (no_jual, tgl_jual, customer, total, bayar, kembalian, keterangan) VALUES ('$noJual','$tgl','$customer',$total,'$bayar', '$kembalian', '$keterangan')";
-    mysqli_query($koneksi, $sqlJual);
+    $sql = "
+        INSERT INTO tbl_penjualan
+        (no_jual, tgl_jual, id_customer, total, bayar, kembalian, keterangan)
+        VALUES
+        ('$no', '$tgl', '$cust', $total, $bayar, $kembali, '$ket')
+    ";
+
+    mysqli_query($koneksi, $sql);
 
     return mysqli_affected_rows($koneksi);
 }
+
+?>

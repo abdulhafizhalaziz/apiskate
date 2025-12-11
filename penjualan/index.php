@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 if (!isset($_SESSION["ssLoginPOS"])) {
     header("location: ../auth/login.php");
     exit();
@@ -15,397 +14,335 @@ require "../template/header.php";
 require "../template/navbar.php";
 require "../template/sidebar.php";
 
-$msg = isset($_GET['msg']) ? $_GET['msg'] : '';
+/* ============================================================
+   AMBIL PARAMETER URL
+============================================================== */
+$noJual = isset($_GET['noJual']) ? $_GET['noJual'] : generateNo();
+$tglNow = isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d');
 
-if ($msg == 'deleted') {
-    $barcode = $_GET['barcode'];
-    $idJual = $_GET['idJual'];
-    $qty = $_GET['qty'];
-    $tgl = $_GET['tgl'];
-    
-    if (delete($barcode, $idJual, $qty)) {
-        echo "<script>
-        alert('Barang berhasil dihapus.');
-        document.location = '?tgl=$tgl';
-        </script>";
-    } else {
-        echo "<script>alert('Gagal menghapus barang. Silakan coba lagi.');</script>";
-    }
+/* ============================================================
+   DELETE ITEM
+============================================================== */
+if (isset($_GET['msg']) && $_GET['msg'] == 'deleted') {
+
+    $idBrg  = $_GET['idBrg'];
+    $qty    = $_GET['qty'];
+    $no     = $_GET['noJual'];
+    $tgl    = $_GET['tgl'];
+
+    delete($idBrg, $no, $qty);
+
+    echo "<script>
+        alert('Barang berhasil dihapus!');
+        document.location='?tgl=$tgl&noJual=$no';
+    </script>";
+    exit;
 }
 
-
-$kode = @$_GET['barcode'] ?? '';
-
-if ($kode) {
-    $tgl = @$_GET['tgl'];
-    $dataBrg = mysqli_query($koneksi, "SELECT * FROM tbl_barang WHERE barcode = '$kode'");
-    $selectBrg = mysqli_fetch_assoc($dataBrg);
-    if (!mysqli_num_rows($dataBrg)) {
-        echo "<script>
-        alert('Barang tidak ditemukan!');
-        document.location='?tgl=$tgl'; 
-        </script>";
-
-        $selectBrg = [];
-    }
-}
-
-$noJual = generateNo();
-
-
+/* ============================================================
+   TAMBAH BARANG
+============================================================== */
 if (isset($_POST['addbrg'])) {
-    $tgl = $_POST['tglNota'];
-    $barcode = trim($_POST['barcode']);
-    $qty = trim($_POST['qty']);
-    if ($barcode == '' || $qty == '' || $qty <= 0) {
-        echo "<script>alert('Barcode dan Qty harus diisi dengan benar!');</script>";
+
+    $tgl     = $_POST['tglNota'];
+    $noJual  = $_POST['noJual'];
+    $kodeBrg = trim($_POST['kodeBrg']);
+    $qty     = trim($_POST['qty']);
+
+    // ========== DEBUG KE BROWSER ==========
+    echo "
+    <script>
+        console.log('===== DEBUG ADD BARANG =====');
+        console.log('tgl       : $tgl');
+        console.log('noJual    : $noJual');
+        console.log('kodeBrg   : $kodeBrg');
+        console.log('qty       : $qty');
+    </script>
+    ";
+    // =======================================
+
+    if ($kodeBrg == '' || $qty == '' || $qty <= 0) {
+        echo "<script>alert('Barang dan Qty harus diisi dengan benar!');</script>";
     } else {
-        if (insert($_POST)) {
-            echo "<script>document.location = '?tgl=$tgl';</script>";
-        }
+       if (insert($_POST)) {
+
+    header("Location: ?tgl=$tgl&noJual=$noJual");
+    exit();
+
+} else {
+    echo "<script>console.log('INSERT STATUS: GAGAL');</script>";
+}
+
     }
 }
 
 
+/* ============================================================
+   SIMPAN TRANSAKSI
+============================================================== */
 if (isset($_POST['simpan'])) {
-    $nota = $_POST['noJual'];
-    $bayar = trim($_POST['bayar']);
-    if ($bayar == '' || $bayar <= 0) {
-        echo "<script>alert('Jumlah bayar harus diisi!');</script>";
+
+    if ($_POST['bayar'] < $_POST['total']) {
+        echo "<script>alert('Pembayaran kurang!');</script>";
     } else {
-        if (simpan($_POST)) {
-            echo "<script>
-            alert('Data penjualan berhasil disimpan.');
-            var win = window.open('../report/r-struk.php?nota=$nota', 'Struk Belanja', 'width=260,height=400,left=10,top=10');
-            if (win) { win.focus(); }
-            window.location = 'index.php';
-            </script>";
-        }
+
+        simpan($_POST);
+
+        $nota = $_POST['noJual'];
+
+        echo "<script>
+            alert('Transaksi berhasil disimpan!');
+            window.open('../report/r-struk.php?nota=$nota',
+                        'Struk',
+                        'width=300,height=500,left=50');
+            location.href='index.php';
+        </script>";
+        exit;
     }
 }
 ?>
 
 <div class="content-wrapper">
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0">Penjualan Barang</h1>
-                </div>
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="<?= $main_url ?>dashboard.php">Home</a></li>
-                        <li class="breadcrumb-item active">Tambah Penjualan</li>
-                    </ol>
-                </div>
-            </div>
+
+<div class="content-header">
+    <div class="container-fluid">
+        <h1 class="m-0 mb-3">Penjualan Barang</h1>
+    </div>
+</div>
+
+<section>
+<div class="container-fluid">
+<form method="post">
+
+<div class="row">
+
+<!-- ================= LEFT ================= -->
+<div class="col-lg-6">
+<div class="card card-outline card-warning p-3">
+
+    <div class="form-group row mb-2">
+        <label class="col-sm-2 col-form-label">No Nota</label>
+        <div class="col-sm-4">
+            <input type="text" name="noJual" class="form-control"
+                   readonly value="<?= $noJual ?>">
+        </div>
+
+        <label class="col-sm-2 col-form-label">Tanggal</label>
+        <div class="col-sm-4">
+            <input type="date" name="tglNota" class="form-control"
+                   value="<?= $tglNow ?>" required>
         </div>
     </div>
 
-    <section>
-        <div class="container-fluid">
-            <form action="" method="post">
-                <div class="row">
-                    <div class="col-lg-6">
-                        <div class="card card-outline card-warning p-3">
-                            <div class="form-group row mb-2">
-                                <label for="noNota" class="col-sm-2 col-form-label">No Nota</label>
-                                <div class="col-sm-4">
-                                    <input type="text" name="noJual" class="form-control" id="noNota"
-                                        value="<?= $noJual ?>">
-                                </div>
-                                <label for="tglNota" class="col-sm-2 col-form-label">Tgl Nota</label>
-                                <div class="col-sm-4">
-                                    <input type="date" name="tglNota" class="form-control" id="tglNota"
-                                        value="<?= isset($_GET['tgl']) ? $_GET['tgl'] : date('Y-m-d') ?>" required>
-                                </div>
-                            </div>
-                            <div class="form-group row mb-2">
-                                <label for="kodeBrg" class="col-sm-2 col-form-label">SKU</label>
-                                <div class="col-sm-10">
-                                    <select id="kodeBrg" class="form-control select2" data-placeholder="-- Pilih atau scan barcode untuk mencari barang --">
-                                        <option value="">-- Pilih atau scan barcode untuk mencari barang --</option>
-                                        <?php
-                                        $barang = getData("SELECT * FROM tbl_barang ORDER BY id_barang ASC");
-                                        foreach($barang as $brg){  ?>
-                                            <option value="<?= $brg['id_barang'] ?>"
-                                                data-barcode="<?= $brg['barcode'] ?>"
-                                                data-nama="<?= htmlspecialchars($brg['nama_barang']) ?>"
-                                                data-stock="<?= $brg['stock'] ?>"
-                                                data-harga="<?= $brg['harga_jual'] ?>"
-                                                data-satuan="<?= htmlspecialchars($brg['satuan']) ?>"
-                                                <?= isset($_GET['pilihbrg']) && $_GET['pilihbrg'] == $brg['id_barang'] ? 'selected' : '' ?>>
-                                                <?= $brg['barcode'] . " | " . $brg['id_barang'] . " | " . $brg['nama_barang'] . " (Stok: " . $brg['stock'] . ")" ?>
-                                            </option>
-                                        <?php } ?>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="card card-outline card-danger pt-3 px-3 pb-2">
-                            <h6 class="font-weight-bold text-right">Total Penjualan</h6>
-                            <h1 class="font-weight-bold text-right" style="font-size: 40pt">
-                                <input type="hidden" name="total" id="total" value="<?= totalJual($noJual) ?>">
-                                <?= number_format(totalJual($noJual), 0, ',', '.') ?>
-                            </h1>
-                        </div>
-                    </div>
-                </div>
-                <div class="card pt-1 pb-2 px-3">
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="form-group">
-                                <input type="hidden" name="kodeBrg" value="<?= @$_GET['barcode'] ? $selectBrg['nama_barang'] : '' ?>">
-                                <input type="hidden" name="barcode" id="barcode" value="<?= @$_GET['barcode'] ?? '' ?>">
-                                <label for="namaBrg">Nama Barang</label>
-                                <input type="text" name="namaBrg" class="form-control form-control-sm" id="namaBrg"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['nama_barang'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                        <div class="col-lg-1">
-                            <div class="form-group">
-                                <label for="stok">Stok</label>
-                                <input type="number" name="stok" class="form-control form-control-sm" id="stok"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['stock'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                        <div class="col-lg-1">
-                            <div class="form-group">
-                                <label for="satuan">Satuan</label>
-                                <input type="text" name="satuan" class="form-control form-control-sm" id="satuan"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['satuan'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <label for="harga">Harga</label>
-                                <input type="number" name="harga" class="form-control form-control-sm" id="harga"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <label for="qty">Qty</label>
-                                <input type="number" name="qty" class="form-control form-control-sm" id="qty"
-                                    value="<?= @$_GET['barcode'] ? 1 : '' ?>">
-                            </div>
-                        </div>
-                        <div class="col-lg-2">
-                            <div class="form-group">
-                                <label for="jmlHarga">Jumlah Harga</label>
-                                <input type="number" name="jmlHarga" class="form-control form-control-sm" id="jmlHarga"
-                                    value="<?= @$_GET['barcode'] ? $selectBrg['harga_jual'] : '' ?>" readonly>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-info btn-block" name="addbrg"><i
-                            class="fas fa-cart-plus fa-sm"></i> Tambah Barang</button>
-                </div>
-                <div class="card card-outline card-success table-responsive px-2">
-                    <table class="table table-sm table-hover text-nowrap">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Barcode</th>
-                                <th>Nama Barang</th>
-                                <th class="text-right">Harga</th>
-                                <th class="text-right">Qty</th>
-                                <th class="text-right">Jumlah Harga</th>
-                                <th class="text-center">Operasi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            $no = 1;
-                            $brgDetail = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$noJual' AND jenis = 'jual'");
-                            foreach ($brgDetail as $detail) { ?>
-                                <tr>
-                                    <td><?= $no++ ?></td>
-                                    <td><?= $detail['kode_brg'] ?></td>
-                                    <td><?= $detail['nama_brg'] ?></td>
-                                    <td class="text-right"><?= number_format($detail['harga'], 0, ',', '.') ?></td>
-                                    <td class="text-right"><?= $detail['qty'] ?></td>
-                                    <td class="text-right"><?= number_format($detail['jml_harga'], 0, ',', '.') ?></td>
-                                    <td class="text-center">
-                                        <a href="?barcode=<?= $detail['kode_brg'] ?>&idJual=<?= $detail['no_transaksi'] ?>&qty=<?= $detail['qty'] ?>&tgl=<?= $detail['tgl_transaksi'] ?>&msg=deleted"
-                                            class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Anda yakin akan menghapus barang ini ?')"><i
-                                                class="fas fa-trash"></i></a>
-                                    </td>
-                                </tr>
-                            <?php } ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="row">
-                    <div class="col-lg-4 p-2">
-                        <div class="form-group row mb-2">
-                            <label for="customer" class="col-sm-3 col-form-label col-form-label-sm">Customer</label>
-                            <div class="col-sm-9">
-                                <select name="customer" id="customer" class="form-control form-control-sm">
-                                    <?php
-                                    $customers = getData("SELECT * FROM tbl_customer");
-                                    foreach ($customers as $customer) { ?>
-                                        <option value="<?= $customer['nama'] ?>"><?= $customer['nama'] ?></option>
-                                        <?php
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row mb-2">
-                            <label for="ktr" class="col-sm-3 col-form-label">Keterangan</label>
-                            <div class="col sm-9">
-                                <textarea name="ketr" id="ketr" class="form-control form-control-sm"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 py-2 px-3">
-                        <div class="form-group row mb-2">
-                            <label for="" class="col-sm-3 col-form-label">Bayar</label>
-                            <div class="col-sm-9">
-                                <input type="number" name="bayar" class="form-control form-control-sm text-right"
-                                    id="bayar" placeholder="Masukkan jumlah bayar">
-                            </div>
-                        </div>
-                        <div class="form-group row mb-2">
-                            <label for="kembalian" class="col-sm-3 col-form-label">Kembalian</label>
-                            <div class="col-sm-9">
-                                <input type="number" name="kembalian" class="form-control form-control-sm text-right"
-                                    id="kembalian" readonly>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col lg-4 p-2">
-            <button type="submit" name="simpan" id="simpan" class="btn btn-primary btn=sm btn-block" disabled><i
-                class="fa fa-save"></i> Simpan</button>
-                    </div>
-            </form>
+    <div class="form-group row mb-2">
+        <label class="col-sm-2 col-form-label">Barang</label>
+        <div class="col-sm-10">
+
+            <select id="pilihBrg" class="form-control select2">
+                <option value="">-- Pilih Barang --</option>
+
+                <?php
+                $barang = getData("SELECT * FROM tbl_barang ORDER BY nama_barang ASC");
+                foreach ($barang as $b) { ?>
+                    <option value="<?= $b['id_barang'] ?>"
+                        data-barcode="<?= $b['barcode'] ?>"
+                        data-nama="<?= $b['nama_barang'] ?>"
+                        data-stock="<?= $b['stock'] ?>"
+                        data-satuan="<?= $b['satuan'] ?>"
+                        data-harga="<?= $b['harga_jual'] ?>">
+                        <?= $b['barcode'] . " | " . $b['nama_barang'] . " | Stok:" . $b['stock'] ?>
+                    </option>
+                <?php } ?>
+            </select>
+
         </div>
-    </section>
-    <script>
-        // Inisialisasi Select2 untuk dropdown barang
-        $(document).ready(function() {
-            $('#kodeBrg').select2({
-                theme: 'bootstrap4',
-                width: '100%',
-                placeholder: '-- Pilih atau ketik untuk mencari barang --',
-                allowClear: true,
-                minimumInputLength: 0,
-                matcher: function(params, data) {
-                    // custom matcher agar search bisa by barcode, id_barang, nama_barang
-                    if ($.trim(params.term) === '') {
-                        return data;
-                    }
-                    var term = params.term.toLowerCase();
-                    var text = (data.text || '').toLowerCase();
-                    var barcode = '';
-                    if (data.element) {
-                        barcode = ($(data.element).data('barcode') || '').toString().toLowerCase();
-                    }
-                    if (text.indexOf(term) > -1 || barcode.indexOf(term) > -1) {
-                        return data;
-                    }
-                    return null;
-                },
-                templateResult: function(item) {
-                    if (item.loading) return item.text;
-                    if (item.element && $(item.element).data('harga')) {
-                        var $container = $(
-                            "<div class='select2-result-repository clearfix'>" +
-                            "<div class='select2-result-repository__title'></div>" +
-                            "<div class='select2-result-repository__description'></div>" +
-                            "</div>"
-                        );
-                        var barcode = $(item.element).data('barcode') || '';
-                        var idbarang = item.id || '';
-                        var nama = $(item.element).data('nama') || '';
-                        $container.find('.select2-result-repository__title').html('<b>' + idbarang + '</b> | ' + barcode + ' | ' + nama);
-                        $container.find('.select2-result-repository__description').text('Harga Jual: Rp ' + numberFormat($(item.element).data('harga')));
-                        return $container;
-                    }
-                    return item.text;
-                },
-                templateSelection: function(item) {
-                    if (item.element) {
-                        var barcode = $(item.element).data('barcode') || '';
-                        var idbarang = item.id || '';
-                        var nama = $(item.element).data('nama') || '';
-                        return idbarang + ' | ' + barcode + ' | ' + nama;
-                    }
-                    return item.text || item.id;
-                }
-            });
+    </div>
 
-            // Autofill form saat barang dipilih
-            $('#kodeBrg').on('select2:select', function (e) {
-                var data = e.params.data;
-                var $option = $(data.element);
-                if (data.id && $option.length) {
-                    // Isi field otomatis dari data attributes
-                    $('input[name="kodeBrg"]').val(data.id);
-                    $('input[name="barcode"]').val($option.data('barcode') || '');
-                    $('input[name="namaBrg"]').val($option.data('nama') || '');
-                    $('input[name="stok"]').val($option.data('stock') || '');
-                    $('input[name="satuan"]').val($option.data('satuan') || '');
-                    $('input[name="harga"]').val($option.data('harga') || '');
-                    // Set qty ke 1 dan fokus, hitung total
-                    var qty = 1;
-                    var harga = $option.data('harga') || 0;
-                    $('input[name="qty"]').val(qty).focus();
-                    $('input[name="jmlHarga"]').val(qty * harga);
-                }
-            });
-            // Clear form saat selection dihapus
-            $('#kodeBrg').on('select2:clear', function () {
-                $('input[name="kodeBrg"]').val('');
-                $('input[name="barcode"]').val('');
-                $('input[name="namaBrg"]').val('');
-                $('input[name="stok"]').val('');
-                $('input[name="satuan"]').val('');
-                $('input[name="harga"]').val('');
-                $('input[name="qty"]').val('');
-                $('input[name="jmlHarga"]').val('');
-            });
-        });
+</div>
+</div>
 
-        // Helper format angka
-        function numberFormat(num) {
-            return parseInt(num).toLocaleString('id-ID');
-        }
+<!-- ================= RIGHT ================= -->
+<div class="col-lg-6">
+<div class="card card-outline card-danger p-3">
+    <h6 class="text-right">Total Penjualan</h6>
+    <h1 class="text-right font-weight-bold">
+        <?= number_format(totalJual($noJual)) ?>
+    </h1>
+    <input type="hidden" name="total" id="total" value="<?= totalJual($noJual) ?>">
+</div>
+</div>
 
-        // Event listener qty
-        document.getElementById('qty').addEventListener('input', function () {
-            const qty = parseInt(this.value) || 0;
-            const harga = parseInt(document.getElementById('harga').value) || 0;
-            document.getElementById('jmlHarga').value = qty * harga;
-        });
+</div> <!-- END ROW -->
 
-        function checkSimpanButton() {
-            const bayar = parseInt(document.getElementById('bayar').value) || 0;
-            const total = parseInt(document.getElementById('total').value) || 0;
-            const simpanBtn = document.getElementById('simpan');
-            // Tombol aktif jika bayar >= total dan bayar > 0
-            if (bayar >= total && bayar > 0 && total > 0) {
-                simpanBtn.disabled = false;
-            } else {
-                simpanBtn.disabled = true;
-            }
-        }
+<!-- ==========================================
+     FORM DETAIL BARANG
+========================================== -->
+<div class="card p-3 mb-2">
 
-        document.getElementById('bayar').addEventListener('input', function () {
-            const bayar = parseInt(this.value) || 0;
-            const total = parseInt(document.getElementById('total').value) || 0;
-            const kembalian = bayar - total;
-            document.getElementById('kembalian').value = kembalian >= 0 ? kembalian : 0;
-            checkSimpanButton();
-        });
+    <input type="hidden" id="kodeBrg" name="kodeBrg">
+    <input type="hidden" name="barcode">
 
-        // Pastikan tombol simpan diupdate saat halaman dimuat
-        window.addEventListener('DOMContentLoaded', function() {
-            checkSimpanButton();
-        });
-    </script>
-    <?php require "../template/footer.php"; ?>
+    <div class="row">
+
+        <div class="col-lg-4">
+            <label>Nama Barang</label>
+            <input type="text" name="namaBrg" class="form-control form-control-sm" readonly>
+        </div>
+
+        <div class="col-lg-1">
+            <label>Stok</label>
+            <input type="number" name="stok" class="form-control form-control-sm" readonly>
+        </div>
+
+        <div class="col-lg-1">
+            <label>Satuan</label>
+            <input type="text" name="satuan" class="form-control form-control-sm" readonly>
+        </div>
+
+        <div class="col-lg-2">
+            <label>Harga</label>
+            <input type="number" name="harga" id="harga" class="form-control form-control-sm" readonly>
+        </div>
+
+        <div class="col-lg-2">
+            <label>Qty</label>
+            <input type="number" name="qty" id="qty" class="form-control form-control-sm">
+        </div>
+
+        <div class="col-lg-2">
+            <label>Jumlah</label>
+            <input type="number" name="jmlHarga" id="jmlHarga" class="form-control form-control-sm" readonly>
+        </div>
+
+    </div>
+
+    <button type="submit" name="addbrg" class="btn btn-info btn-sm btn-block mt-2">
+        <i class="fas fa-cart-plus"></i> Tambah Barang
+    </button>
+
+</div>
+
+<!-- ==========================================
+     TABLE DETAIL
+========================================== -->
+<div class="card card-outline card-success p-2 table-responsive">
+
+<table class="table table-sm table-hover">
+<thead>
+<tr>
+    <th>No</th>
+    <th>Barcode</th>
+    <th>ID Barang</th>
+    <th>Nama</th>
+    <th class="text-right">Harga</th>
+    <th class="text-right">Qty</th>
+    <th class="text-right">Subtotal</th>
+    <th class="text-center">Aksi</th>
+</tr>
+</thead>
+
+<tbody>
+<?php
+$no = 1;
+$detail = getData("SELECT * FROM tbl_detail_jual WHERE no_jual='$noJual'");
+foreach ($detail as $d) { ?>
+<tr>
+    <td><?= $no++ ?></td>
+    <td><?= $d['barcode'] ?></td>
+    <td><?= $d['id_barang'] ?></td>
+    <td><?= $d['nama_brg'] ?></td>
+    <td class="text-right"><?= number_format($d['harga_jual']) ?></td>
+    <td class="text-right"><?= $d['qty'] ?></td>
+    <td class="text-right"><?= number_format($d['jml_harga']) ?></td>
+    <td class="text-center">
+        <a href="?msg=deleted&idBrg=<?= $d['id_barang'] ?>&noJual=<?= $noJual ?>&qty=<?= $d['qty'] ?>&tgl=<?= $tglNow ?>"
+           class="btn btn-danger btn-sm">
+            <i class="fas fa-trash"></i>
+        </a>
+    </td>
+</tr>
+<?php } ?>
+</tbody>
+
+</table>
+
+</div>
+
+<!-- ==========================================
+     CUSTOMER & PEMBAYARAN
+========================================== -->
+<div class="row mt-3">
+
+<div class="col-lg-6">
+    <label>Customer</label>
+    <select name="customer" class="form-control form-control-sm">
+        <?php
+        $cus = getData("SELECT * FROM tbl_customer");
+        foreach ($cus as $c) { ?>
+            <option value="<?= $c['id_customer'] ?>"><?= $c['nama'] ?></option>
+        <?php } ?>
+    </select>
+
+    <label class="mt-2">Keterangan</label>
+    <textarea name="ketr" class="form-control form-control-sm"></textarea>
+</div>
+
+<div class="col-lg-6">
+    <label>Bayar</label>
+    <input type="number" name="bayar" id="bayar" class="form-control form-control-sm text-right">
+
+    <label class="mt-2">Kembalian</label>
+    <input type="number" name="kembalian" id="kembalian" class="form-control form-control-sm text-right" readonly>
+
+    <button type="submit" name="simpan" id="simpan"
+            class="btn btn-primary btn-sm btn-block mt-3" disabled>
+        <i class="fa fa-save"></i> Simpan Transaksi
+    </button>
+</div>
+
+</div>
+
+</form>
+</div>
+</section>
+
+</div>
+
+<!-- ==========================================
+     JAVASCRIPT
+========================================== -->
+<script>
+$('.select2').select2({ theme:'bootstrap4' });
+
+// Saat barang dipilih
+$('#pilihBrg').on('change', function() {
+
+    let opt = $(this).find('option:selected');
+
+    $('input[name="kodeBrg"]').val($(this).val());
+    $('input[name="barcode"]').val(opt.data('barcode'));
+    $('input[name="namaBrg"]').val(opt.data('nama'));
+    $('input[name="stok"]').val(opt.data('stock'));
+    $('input[name="satuan"]').val(opt.data('satuan'));
+    $('input[name="harga"]').val(opt.data('harga'));
+
+    $('#qty').val(1);
+    $('#jmlHarga').val(opt.data('harga'));
+});
+
+// Hitung subtotal
+$('#qty').on('input', function(){
+    $('#jmlHarga').val( (parseInt($(this).val()) || 0) * (parseInt($('#harga').val()) || 0) );
+});
+
+// Enable tombol simpan
+$('#bayar').on('input', function(){
+    let bayar = parseInt($(this).val()) || 0;
+    let total = parseInt($('#total').val()) || 0;
+
+    $('#kembalian').val(bayar - total);
+    $('#simpan').prop('disabled', !(bayar >= total && total > 0));
+});
+</script>
+
+<?php require "../template/footer.php"; ?>

@@ -27,7 +27,7 @@ if (isset($_POST['update'])) {
 
 $id = $_GET['id'];
 
-$sqlEdit = "SELECT * FROM tbl_supplier WHERE id_supplier = $id";
+$sqlEdit = "SELECT * FROM tbl_supplier WHERE id_supplier = '$id'";
 $supplier = getData($sqlEdit)[0];
 
 ?>

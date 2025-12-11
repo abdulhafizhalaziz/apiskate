@@ -18,9 +18,33 @@ require "../template/sidebar.php";
 
 $id = $_GET['id'];
 
-$sqlEdit = "SELECT * FROM tbl_user WHERE userid = $id";
-$user    = getData($sqlEdit)[0];
-$level   = $user['level'];
+$id = $_GET['id'] ?? null;
+
+// Jika tidak ada ID di URL
+if (!$id) {
+    echo "<script>
+            alert('ID user tidak ditemukan.');
+            document.location.href = 'data-user.php';
+          </script>";
+    exit();
+}
+
+$sqlEdit = "SELECT * FROM tbl_user WHERE userid = '$id'";
+$dataUser = getData($sqlEdit);
+
+// Cek apakah user ditemukan
+if (count($dataUser) === 0) {
+    echo "<script>
+            alert('Data user tidak ditemukan di database.');
+            document.location.href = 'data-user.php';
+          </script>";
+    exit();
+}
+
+// Ambil data user
+$user  = $dataUser[0];
+$level = $user['level'];
+
 
 if (isset($_POST['koreksi'])) {
   if (update($_POST)){

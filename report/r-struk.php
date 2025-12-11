@@ -10,94 +10,103 @@ require "../config/config.php";
 require "../config/functions.php";
 
 $nota = $_GET['nota'];
-$dataJual = getData("SELECT * FROM tbl_transaksi_jual WHERE no_jual = '$nota'")[0];
-$itemJual = getData("SELECT * FROM tbl_transaksi_detail WHERE no_transaksi = '$nota' AND jenis = 'jual'");
 
+// Ambil data header transaksi
+$dataJual = getData("SELECT * FROM tbl_penjualan WHERE no_jual = '$nota'")[0];
+
+// Ambil semua item transaksi
+$itemJual = getData("
+    SELECT d.*, b.satuan 
+    FROM tbl_detail_jual d
+    LEFT JOIN tbl_barang b ON d.id_barang = b.id_barang
+    WHERE d.no_jual = '$nota'
+");
 ?>
-
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Struk Belanja</title>
+
+    <style>
+        body {
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .center {
+            text-align: center;
+        }
+        table {
+            width: 240px;
+        }
+        hr {
+            border: none;
+            border-top: 1px dashed black;
+            margin: 5px 0;
+        }
+    </style>
 </head>
 
 <body>
-    <table style="border-bottom: solid 2px; text-align: center; font-size: 14px; width: 240px;">
-        <tr>
-            <td>
-                <b>Snackinaja POS</b>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <?= 'No Nota : ' . $nota ?>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <?= date('d-m-Y H:i:s') ?>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <?= userLogin()['username'] ?>
-            </td>
-        </tr>
+
+    <!-- HEADER TOKO -->
+    <table class="center">
+        <tr><td><b>Snackinaja POS</b></td></tr>
+        <tr><td>No Nota : <?= $nota ?></td></tr>
+        <tr><td><?= date('d-m-Y H:i:s') ?></td></tr>
+        <tr><td>Kasir : <?= userLogin()['username'] ?></td></tr>
     </table>
-    <table style="border-bottom: dotted 2px; font-size: 14px; width: 240px;">
-        <?php
-        foreach ($itemJual as $item) {
-            ?>
+
+    <hr>
+
+    <!-- DETAIL ITEM -->
+    <table>
+        <?php foreach ($itemJual as $item) { ?>
             <tr>
-                <td colspan="6"><?= $item['nama_brg'] ?></td>
+                <td colspan="3"><?= $item['nama_brg'] ?></td>
             </tr>
+
             <tr>
-                <td colspan="2" style="width: 70px;">Qty: </td>
-                <td style="width: 10px; text-align: right; "><?= $item['qty'] ?></td>
-                <td style="width: 10px; text-align: right;" colspan="2">x
-                    <?= number_format($item['harga'], 0, '.', ',') ?></td>
-                <td style="width: 10px; text-align: right;" colspan="2">
-                    <?= number_format($item['jml_harga'], 0, '.', ',') ?></td>
+                <td><?= $item['qty'] ?> <?= $item['satuan'] ?></td>
+                <td style="text-align:right;">x <?= number_format($item['harga_jual'], 0, ',', '.') ?></td>
+                <td style="text-align:right;"><?= number_format($item['jml_harga'], 0, ',', '.') ?></td>
             </tr>
-            <?php
-        }
-        ?>
+
+            <tr><td colspan="3"><hr></td></tr>
+        <?php } ?>
     </table>
-    <table style="border-bottom: dotted 2px; font-size: 14px; width: 240px;">
+
+    <!-- TOTAL BAYAR -->
+    <table>
         <tr>
-            <td colspan="3" style="width: 100px;"></td>
-            <td style="width: 50px; text-align: right;">Total</td>
-            <td colspan="2" style="width: 70px; text-align: right;">
-                <b><?= number_format($dataJual['total'], 0, '.', ',') ?></b></td>
+            <td>Total</td>
+            <td style="text-align:right;"><b><?= number_format($dataJual['total'], 0, ',', '.') ?></b></td>
         </tr>
         <tr>
-            <td colspan="3" style="width: 100px;"></td>
-            <td style="width: 50px; text-align: right;">Bayar</td>
-            <td colspan="2" style="width: 70px; text-align: right;">
-                <b><?= number_format($dataJual['bayar'], 0, '.', ',') ?></b></td>
+            <td>Bayar</td>
+            <td style="text-align:right;"><b><?= number_format($dataJual['bayar'], 0, ',', '.') ?></b></td>
         </tr>
-    </table>
-    <table style="border-bottom: solid 2px; font-size: 14px; width: 240px;">
         <tr>
-            <td colspan="3" style="width: 100px;"></td>
-            <td style="width: 50px; text-align: right;">Kembali</td>
-            <td colspan="2" style="width: 70px; text-align: right;">
-                <b><?= number_format($dataJual['kembalian'], 0, '.', ',') ?></b></td>
+            <td>Kembali</td>
+            <td style="text-align:right;"><b><?= number_format($dataJual['kembalian'], 0, ',', '.') ?></b></td>
         </tr>
     </table>
-    <table style="text-align:center; margin-top: 5px;font-size: 14px; width: 240px;">
-        <tr>
-            <td>Terima Kasih sudah berbelanja</td>
-        </tr>
-    </table>
+
+    <hr>
+
+    <!-- FOOTER -->
+    <div class="center">
+        Terima Kasih sudah berbelanja<br>
+        ~ Snackinaja ~
+    </div>
 
     <script>
-        setTimeout(function() => {
+        // Auto print setelah 0.5 detik
+        setTimeout(function(){
             window.print();
-        }, 5000);
+        }, 500);
     </script>
-</body>
 
+</body>
 </html>

@@ -51,19 +51,21 @@ function uploadimg($url = null, $name = null) {
     return $namaFileBaru;
 }
 
-// Fungsi untuk mengambil data dari database
 function getData($sql) {
     global $koneksi;
-
     $result = mysqli_query($koneksi, $sql);
+    // Jika query gagal
+    if (!$result) {
+        return [];
+    }
     $rows = [];
-
     while ($row = mysqli_fetch_assoc($result)) {
         $rows[] = $row;
     }
 
     return $rows;
 }
+
 
 function userLogin() {
     $userActive = $_SESSION["ssUserPOS"];
@@ -193,7 +195,7 @@ function in_date($tgl) {
 
 function omzet() {
     global $koneksi;
-    $query = mysqli_query($koneksi, "SELECT SUM(total) AS omzet FROM tbl_transaksi_jual");
+    $query = mysqli_query($koneksi, "SELECT SUM(total) AS omzet FROM tbl_penjualan");
     $data = mysqli_fetch_assoc($query);
     $omzet = number_format($data['omzet'], 0, ',', '.');
     return $omzet;

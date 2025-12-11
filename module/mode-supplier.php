@@ -5,16 +5,39 @@ if (userLogin()['level'] == 3) {
     exit();
 }
 
+function generateSupplierId() {
+    global $koneksi;
+
+    // Ambil ID terbesar saat ini
+    $query = mysqli_query($koneksi, 
+        "SELECT id_supplier FROM tbl_supplier ORDER BY id_supplier DESC LIMIT 1");
+
+    $data = mysqli_fetch_assoc($query);
+
+    if ($data) {
+        $lastNumber = intval(substr($data['id_supplier'], 4));
+        $newNumber = $lastNumber + 1;
+    } else {
+        $newNumber = 1;
+    }
+
+    return "SUP-" . str_pad($newNumber, 3, "0", STR_PAD_LEFT);
+}
+
 function insert($data){
     global $koneksi;
+
+    $id_supplier = generateSupplierId();  // tambahkan ini
 
     $nama    = mysqli_real_escape_string($koneksi, $data['nama']);
     $telpon  = mysqli_real_escape_string($koneksi, $data['telpon']);
     $alamat  = mysqli_real_escape_string($koneksi, $data['alamat']);
     $ketr    = mysqli_real_escape_string($koneksi, $data['ketr']);
 
-    $sqlSupplier    = "INSERT INTO tbl_supplier VALUES (null, '$nama', '$telpon', '$ketr', '$alamat')";
-    mysqli_query($koneksi, $sqlSupplier);
+    $sql = "INSERT INTO tbl_supplier (id_supplier, nama, telpon, deskripsi, alamat)
+            VALUES ('$id_supplier', '$nama', '$telpon', '$ketr', '$alamat')";
+
+    mysqli_query($koneksi, $sql);
 
     return mysqli_affected_rows($koneksi);
 }
@@ -22,7 +45,7 @@ function insert($data){
 function delete($id){
     global $koneksi;
 
-    $sqlDelete = "DELETE FROM tbl_supplier WHERE id_supplier = $id";
+    $sqlDelete = "DELETE FROM tbl_supplier WHERE id_supplier = '$id'";
     mysqli_query($koneksi, $sqlDelete);
     
     return mysqli_affected_rows($koneksi);
@@ -42,7 +65,7 @@ function update($data) {
                         telpon  = '$telpon',
                         deskripsi = '$ketr',
                         alamat  = '$alamat'
-                        WHERE id_supplier = $id    
+                        WHERE id_supplier = '$id'    
                         ";
     mysqli_query($koneksi, $sqlSupplier);
     
